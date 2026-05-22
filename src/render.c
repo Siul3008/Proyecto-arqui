@@ -41,6 +41,8 @@ static int color_for_char(char value)
         return COLOR_PAIR_ENEMY_SHOT;
     case '*':
         return COLOR_PAIR_PLAYER_SHOT;
+    case 'A':
+        return COLOR_PAIR_PLAYER;
     default:
         return COLOR_PAIR_TEXT;
     }
@@ -140,7 +142,7 @@ void render_draw(const GameState *game)
     }
 
     attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
-    mvprintw(game->player.position.y + 3, game->player.position.x, "/⮝\\");
+    mvprintw(game->player.position.y + 3, game->player.position.x + 1, "A");
     attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));
