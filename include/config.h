@@ -1,8 +1,8 @@
 #ifndef RECCA_CONFIG_H
 #define RECCA_CONFIG_H
 
-#define GAME_WIDTH 80
-#define GAME_HEIGHT 28
+#define GAME_WIDTH 70
+#define GAME_HEIGHT 24
 
 #define MAX_PLAYER_SHOTS 16
 #define MAX_ENEMIES 12
