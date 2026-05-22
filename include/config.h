@@ -16,6 +16,6 @@
 #define PLAYER_START_X (GAME_WIDTH / 2)
 #define PLAYER_START_Y (GAME_HEIGHT - 2)
 
-#define FRAME_DELAY_MS 80
+#define FRAME_DELAY_MS 20
 
 #endif
