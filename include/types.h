@@ -14,6 +14,12 @@ typedef struct {
 
 typedef struct {
     Vec2i position;
+    int active;
+    int timer;
+} Effect;
+
+typedef struct {
+    Vec2i position;
     Vec2i velocity;
     int active;
     int health;

@@ -39,6 +39,8 @@ static int color_for_char(char value)
         return COLOR_PAIR_ENEMY;
     case 'o':
         return COLOR_PAIR_ENEMY_SHOT;
+    case '*':
+        return COLOR_PAIR_PLAYER_SHOT;
     default:
         return COLOR_PAIR_TEXT;
     }
@@ -97,6 +99,12 @@ void render_draw(const GameState *game)
     for (int i = 0; i < MAX_ENEMIES; ++i) {
         if (game->enemies[i].active) {
             put_char(board, game->enemies[i].position.x, game->enemies[i].position.y, 'v');
+        }
+    }
+
+    for (int i = 0; i < MAX_EFFECTS; ++i) {
+        if (game->effects[i].active) {
+            put_char(board, game->effects[i].position.x, game->effects[i].position.y, '*');
         }
     }
 

@@ -4,11 +4,13 @@
 #include "enemy.h"
 #include "player.h"
 #include "projectile.h"
+#include "effect.h"
 
 void game_init(GameState *game)
 {
     player_init(&game->player);
     projectiles_clear(game->player_shots, MAX_PLAYER_SHOTS);
+    effect_clear(game->effects, MAX_EFFECTS);
     projectiles_clear(game->enemy_shots, MAX_ENEMY_SHOTS);
     enemies_clear(game->enemies, MAX_ENEMIES);
 
@@ -37,4 +39,5 @@ void game_update(GameState *game, int input_mask)
     collisions_update(game);
 
     game->frame += 1;
+    effect_update(game->effects, MAX_EFFECTS);
 }

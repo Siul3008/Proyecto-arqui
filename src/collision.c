@@ -1,6 +1,7 @@
 #include "collision.h"
 
 #include "config.h"
+#include "effect.h"
 
 static int positions_overlap(Vec2i a, Vec2i b)
 {
@@ -27,6 +28,7 @@ void collisions_update(GameState *game)
                 shot->active = 0;
                 enemy->health -= 1;
                 if (enemy->health <= 0) {
+                    effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION);
                     enemy->active = 0;
                     game->player.score += 100;
                 }
