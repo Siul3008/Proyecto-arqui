@@ -1,0 +1,17 @@
+#ifndef RECCA_CONFIG_H
+#define RECCA_CONFIG_H
+
+#define GAME_WIDTH 80
+#define GAME_HEIGHT 28
+
+#define MAX_PLAYER_SHOTS 16
+#define MAX_ENEMIES 12
+#define MAX_ENEMY_SHOTS 24
+
+#define PLAYER_START_LIVES 3
+#define PLAYER_START_X (GAME_WIDTH / 2)
+#define PLAYER_START_Y (GAME_HEIGHT - 2)
+
+#define FRAME_DELAY_MS 80
+
+#endif

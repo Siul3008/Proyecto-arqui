@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Win32-MSYS2-UCRT64",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "C:/msys64/ucrt64/include",
+                "C:/msys64/ucrt64/include/ncursesw",
+                "C:/msys64/ucrt64/include/ncurses"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}

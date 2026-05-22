@@ -1,0 +1,19 @@
+# Build outputs
+*.exe
+*.out
+*.o
+*.obj
+*.dll
+*.a
+
+# Debug symbols and logs
+*.pdb
+*.ilk
+*.log
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+
+# Keep VS Code project settings minimal and useful.
+# c_cpp_properties.json is intentionally tracked for include paths.
