@@ -34,16 +34,34 @@ static int color_for_char(char value)
 {
     switch (value) {
     case '|':
+    case '*':
         return COLOR_PAIR_PLAYER_SHOT;
     case 'v':
+    case 'd':
+    case 'z':
+    case 'f':
         return COLOR_PAIR_ENEMY;
     case 'o':
         return COLOR_PAIR_ENEMY_SHOT;
-    case '*':
-        return COLOR_PAIR_PLAYER_SHOT;
     default:
         return COLOR_PAIR_TEXT;
     }
+}
+
+static char enemy_char_for_type(EnemyType type)
+{
+    switch (type) {
+    case ENEMY_STRAIGHT:
+        return 'v';
+    case ENEMY_DIAGONAL:
+        return 'd';
+    case ENEMY_ZIGZAG:
+        return 'z';
+    case ENEMY_FAST:
+        return 'f';
+    }
+
+    return 'v';
 }
 
 void render_init(void)
@@ -98,7 +116,10 @@ void render_draw(const GameState *game)
 
     for (int i = 0; i < MAX_ENEMIES; ++i) {
         if (game->enemies[i].active) {
-            put_char(board, game->enemies[i].position.x, game->enemies[i].position.y, 'v');
+            put_char(board,
+                     game->enemies[i].position.x,
+                     game->enemies[i].position.y,
+                     enemy_char_for_type(game->enemies[i].type));
         }
     }
 
@@ -112,8 +133,8 @@ void render_draw(const GameState *game)
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
     mvprintw(0, 0, "Summer Carnival '92: Recca - texto");
-    mvprintw(1, 0, "Score: %06d  Lives: %d  Controls: W/A/S/D, arrows, Space, Q",
-             game->player.score, game->player.lives);
+    mvprintw(1, 0, "Score: %06d  Lives: %d  Wave: %d  Controls: W/A/S/D, arrows, Space, Q",
+             game->player.score, game->player.lives, game->wave);
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));
@@ -140,7 +161,7 @@ void render_draw(const GameState *game)
     }
 
     attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
-    mvprintw(game->player.position.y + 3, game->player.position.x, "/⮝\\");
+    mvprintw(game->player.position.y + 3, game->player.position.x, "/A\\");
     attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));

@@ -25,7 +25,7 @@ void effect_spawn(Effect effects[], int count, Vec2i position, int duration)
 void effect_update(Effect effects[], int count)
 {
     for (int i = 0; i < count; ++i) {
-        if (effects[i].active) {
+        if (!effects[i].active) {
             continue;
         }
 

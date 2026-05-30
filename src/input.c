@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-#include <curses.h>
+#include <ncursesw/curses.h>
 
 int input_poll(void)
 {

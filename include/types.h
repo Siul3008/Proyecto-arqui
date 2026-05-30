@@ -18,12 +18,21 @@ typedef struct {
     int timer;
 } Effect;
 
+typedef enum {
+    ENEMY_STRAIGHT,
+    ENEMY_DIAGONAL,
+    ENEMY_ZIGZAG,
+    ENEMY_FAST
+} EnemyType;
+
 typedef struct {
     Vec2i position;
     Vec2i velocity;
     int active;
     int health;
     int fire_cooldown;
+    int age;
+    EnemyType type;
 } Enemy;
 
 typedef struct {
