@@ -37,6 +37,7 @@ static int color_for_char(char value)
     switch (value) {
     case '|':
     case '*':
+    case 'O':
         return COLOR_PAIR_PLAYER_SHOT;
     case 'v':
     case 'd':
@@ -230,10 +231,12 @@ void render_draw(const GameState *game)
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
     mvprintw(0, 0, "Summer Carnival '92: Recca - texto");
-    mvprintw(1, 0, "Score: %06d  Lives: %d  Rank: %d  %s  Next Boss: %d",
+    int charge_percent = (game->player.charge_frames * 100) / PLAYER_CHARGE_MAX;
+    mvprintw(1, 0, "Score: %06d  Lives: %d  Rank: %d  Charge: %3d%%  %s  Next Boss: %d",
              game->player.score,
              game->player.lives,
              game->level,
+             charge_percent,
              game->phase == LEVEL_PHASE_BOSS ? "BOSS" : "NORMAL",
              game->next_boss_score);
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
@@ -266,6 +269,15 @@ void render_draw(const GameState *game)
         attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
         mvprintw(game->player.position.y + 3, game->player.position.x, "/A\\");
         attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    }
+
+    if (game->player.charge_frames > 0 && game->player.position.y > 0) {
+        int charge_color = game->player.charge_frames >= PLAYER_CHARGE_RELEASE_MIN ?
+                           COLOR_PAIR_PLAYER_SHOT :
+                           COLOR_PAIR_PLAYER;
+        attron(COLOR_PAIR(charge_color));
+        mvaddch(game->player.position.y + 2, game->player.position.x + 1, 'O');
+        attroff(COLOR_PAIR(charge_color));
     }
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));

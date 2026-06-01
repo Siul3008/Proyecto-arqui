@@ -52,6 +52,110 @@ static int enemy_shot_move_interval_for_wave(int wave)
     return 1;
 }
 
+static int abs_int(int value)
+{
+    return value < 0 ? -value : value;
+}
+
+static int score_for_enemy_type(EnemyType type)
+{
+    switch (type) {
+    case ENEMY_MINI_BOSS:
+        return MINI_BOSS_SCORE;
+    case ENEMY_STAGE_BOSS:
+        return STAGE_BOSS_SCORE;
+    default:
+        return 100;
+    }
+}
+
+static Vec2i player_charge_position(const Player *player)
+{
+    Vec2i position = {player->position.x, player->position.y - 1};
+    return position;
+}
+
+static int projectile_inside_radius(Vec2i projectile, Vec2i center, int radius)
+{
+    return abs_int(projectile.x - center.x) + abs_int(projectile.y - center.y) <= radius;
+}
+
+static int enemy_inside_radius(const Enemy *enemy, Vec2i center, int radius)
+{
+    int half_width = enemy_hitbox_half_width(enemy->type);
+    int left = enemy->position.x - half_width;
+    int right = enemy->position.x + half_width;
+    int dx = 0;
+
+    if (center.x < left) {
+        dx = left - center.x;
+    } else if (center.x > right) {
+        dx = center.x - right;
+    }
+
+    return dx + abs_int(enemy->position.y - center.y) <= radius;
+}
+
+static void spawn_charge_effects(GameState *game, Vec2i center)
+{
+    effect_spawn(game->effects, MAX_EFFECTS, center, EXPLOSION_DURATION);
+    effect_spawn(game->effects, MAX_EFFECTS, (Vec2i){center.x - 1, center.y}, EXPLOSION_DURATION);
+    effect_spawn(game->effects, MAX_EFFECTS, (Vec2i){center.x + 1, center.y}, EXPLOSION_DURATION);
+    effect_spawn(game->effects, MAX_EFFECTS, (Vec2i){center.x, center.y - 1}, EXPLOSION_DURATION);
+    effect_spawn(game->effects, MAX_EFFECTS, (Vec2i){center.x, center.y + 1}, EXPLOSION_DURATION);
+}
+
+static void update_charge_shield(GameState *game)
+{
+    if (game->player.charge_frames < PLAYER_CHARGE_SHIELD_MIN) {
+        return;
+    }
+
+    Vec2i center = player_charge_position(&game->player);
+
+    for (int i = 0; i < MAX_ENEMY_SHOTS; ++i) {
+        Projectile *shot = &game->enemy_shots[i];
+
+        if (shot->active && projectile_inside_radius(shot->position, center, CHARGE_SHIELD_RADIUS)) {
+            effect_spawn(game->effects, MAX_EFFECTS, shot->position, EXPLOSION_DURATION);
+            shot->active = 0;
+        }
+    }
+}
+
+static void apply_charge_bomb(GameState *game)
+{
+    if (!game->player.charge_bomb_ready) {
+        return;
+    }
+
+    Vec2i center = player_charge_position(&game->player);
+    spawn_charge_effects(game, center);
+
+    for (int i = 0; i < MAX_ENEMY_SHOTS; ++i) {
+        Projectile *shot = &game->enemy_shots[i];
+
+        if (shot->active && projectile_inside_radius(shot->position, center, CHARGE_BOMB_RADIUS)) {
+            shot->active = 0;
+        }
+    }
+
+    for (int i = 0; i < MAX_ENEMIES; ++i) {
+        Enemy *enemy = &game->enemies[i];
+
+        if (!enemy->active || !enemy_inside_radius(enemy, center, CHARGE_BOMB_RADIUS)) {
+            continue;
+        }
+
+        enemy->health -= CHARGE_BOMB_DAMAGE;
+        if (enemy->health <= 0) {
+            effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION);
+            enemy->active = 0;
+            game->player.score += score_for_enemy_type(enemy->type);
+        }
+    }
+}
+
 static void reset_run(GameState *game)
 {
     player_init(&game->player);
@@ -135,6 +239,7 @@ void game_update(GameState *game, int input_mask)
     }
 
     player_update(&game->player, input_mask, game->player_shots, MAX_PLAYER_SHOTS);
+    apply_charge_bomb(game);
     update_wave_spawning(game);
 
     projectiles_update(game->player_shots,
@@ -151,6 +256,7 @@ void game_update(GameState *game, int input_mask)
                    MAX_ENEMY_SHOTS,
                    game->frame,
                    enemy_move_interval_for_wave(game->level));
+    update_charge_shield(game);
     collisions_update(game);
     game->level = rank_for_score(game->player.score);
     update_level_progression(game);
