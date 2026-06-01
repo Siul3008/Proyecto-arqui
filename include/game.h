@@ -11,8 +11,14 @@ typedef struct {
     Enemy enemies[MAX_ENEMIES];
     Effect effects[MAX_EFFECTS];
     int frame;
+    int level;
+    int boss_count;
+    int next_boss_score;
+    int wave_spawned;
+    int next_spawn_frame;
+    LevelPhase phase;
     int running;
-    int game_over;
+    GameScreen screen;
 } GameState;
 
 void game_init(GameState *game);
