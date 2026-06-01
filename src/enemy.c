@@ -63,6 +63,18 @@ int enemy_max_health(EnemyType type)
     }
 }
 
+int enemy_hitbox_half_width(EnemyType type)
+{
+    switch (type) {
+    case ENEMY_MINI_BOSS:
+        return 2;
+    case ENEMY_STAGE_BOSS:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
 void enemies_clear(Enemy enemies[], int count)
 {
     for (int i = 0; i < count; ++i) {
@@ -128,7 +140,9 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
         }
         enemy->age += 1;
 
-        if (enemy->position.x <= 1 || enemy->position.x >= GAME_WIDTH - 2) {
+        int half_width = enemy_hitbox_half_width(enemy->type);
+        if (enemy->position.x - half_width <= 0 ||
+            enemy->position.x + half_width >= GAME_WIDTH - 1) {
             enemy->velocity.x *= -1;
         }
 

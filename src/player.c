@@ -10,10 +10,15 @@ void player_init(Player *player)
     player->lives = PLAYER_START_LIVES;
     player->score = 0;
     player->shot_cooldown = 0;
+    player->invulnerable_timer = 0;
 }
 
 void player_update(Player *player, int input_mask, Projectile player_shots[], int shot_count)
 {
+    if (player->invulnerable_timer > 0) {
+        player->invulnerable_timer -= 1;
+    }
+
     if (input_mask & INPUT_LEFT) {
         player->position.x -= 1;
     }
@@ -30,7 +35,7 @@ void player_update(Player *player, int input_mask, Projectile player_shots[], in
     if (player->position.x < 1) {
         player->position.x = 1;
     }
-    if (player->position.x >= GAME_WIDTH -1 ) {
+    if (player->position.x >= GAME_WIDTH - 1) {
         player->position.x = GAME_WIDTH - 2;
     }
     if (player->position.y < 0) {

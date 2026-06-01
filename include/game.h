@@ -12,7 +12,8 @@ typedef struct {
     Effect effects[MAX_EFFECTS];
     int frame;
     int level;
-    int level_start_score;
+    int boss_count;
+    int next_boss_score;
     int wave_spawned;
     int next_spawn_frame;
     LevelPhase phase;

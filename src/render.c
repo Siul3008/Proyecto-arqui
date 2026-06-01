@@ -42,6 +42,12 @@ static int color_for_char(char value)
     case 'd':
     case 'z':
     case 'f':
+    case 'M':
+    case 'B':
+    case '<':
+    case '>':
+    case '[':
+    case ']':
         return COLOR_PAIR_ENEMY;
     case 'o':
         return COLOR_PAIR_ENEMY_SHOT;
@@ -68,6 +74,29 @@ static char enemy_char_for_type(EnemyType type)
     }
 
     return 'v';
+}
+
+static void put_enemy_on_board(char board[GAME_HEIGHT][GAME_WIDTH], const Enemy *enemy)
+{
+    if (enemy->type == ENEMY_MINI_BOSS) {
+        const char *body = "<MMM>";
+        int start_x = enemy->position.x - enemy_hitbox_half_width(enemy->type);
+        for (int i = 0; body[i] != '\0'; ++i) {
+            put_char(board, start_x + i, enemy->position.y, body[i]);
+        }
+        return;
+    }
+
+    if (enemy->type == ENEMY_STAGE_BOSS) {
+        const char *body = "[BBBBB]";
+        int start_x = enemy->position.x - enemy_hitbox_half_width(enemy->type);
+        for (int i = 0; body[i] != '\0'; ++i) {
+            put_char(board, start_x + i, enemy->position.y, body[i]);
+        }
+        return;
+    }
+
+    put_char(board, enemy->position.x, enemy->position.y, enemy_char_for_type(enemy->type));
 }
 
 static void render_centered(int row, const char *text)
@@ -105,8 +134,8 @@ static void render_game_over(const GameState *game)
     attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    mvprintw(GAME_HEIGHT + 6, 0, "Final Score: %06d  Level: %d  R: restart  Q: quit",
-             game->player.score, game->level);
+    mvprintw(GAME_HEIGHT + 6, 0, "Final Score: %06d  Rank: %d  Bosses: %d  R: restart  Q: quit",
+             game->player.score, game->level, game->boss_count);
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 }
 
@@ -187,10 +216,7 @@ void render_draw(const GameState *game)
 
     for (int i = 0; i < MAX_ENEMIES; ++i) {
         if (game->enemies[i].active) {
-            put_char(board,
-                     game->enemies[i].position.x,
-                     game->enemies[i].position.y,
-                     enemy_char_for_type(game->enemies[i].type));
+            put_enemy_on_board(board, &game->enemies[i]);
         }
     }
 
@@ -204,11 +230,12 @@ void render_draw(const GameState *game)
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
     mvprintw(0, 0, "Summer Carnival '92: Recca - texto");
-    mvprintw(1, 0, "Score: %06d  Lives: %d  Level: %d  %s  Controls: W/A/S/D, arrows, Space, Q",
+    mvprintw(1, 0, "Score: %06d  Lives: %d  Rank: %d  %s  Next Boss: %d",
              game->player.score,
              game->player.lives,
              game->level,
-             game->phase == LEVEL_PHASE_BOSS ? "BOSS" : "NORMAL");
+             game->phase == LEVEL_PHASE_BOSS ? "BOSS" : "NORMAL",
+             game->next_boss_score);
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));
@@ -234,9 +261,12 @@ void render_draw(const GameState *game)
         }
     }
 
-    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
-    mvprintw(game->player.position.y + 3, game->player.position.x, "/A\\");
-    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    if (game->player.invulnerable_timer == 0 ||
+        (game->player.invulnerable_timer / 5) % 2 == 0) {
+        attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
+        mvprintw(game->player.position.y + 3, game->player.position.x, "/A\\");
+        attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    }
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));
     mvaddch(GAME_HEIGHT + 3, 0, '+');

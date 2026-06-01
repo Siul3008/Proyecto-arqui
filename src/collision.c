@@ -2,10 +2,29 @@
 
 #include "config.h"
 #include "effect.h"
+#include "enemy.h"
 
 static int positions_overlap(Vec2i a, Vec2i b)
 {
     return a.x == b.x && a.y == b.y;
+}
+
+static int ranges_overlap(int center_a, int half_a, int center_b, int half_b)
+{
+    return center_a - half_a <= center_b + half_b &&
+           center_b - half_b <= center_a + half_a;
+}
+
+static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
+{
+    return shot_position.y == enemy->position.y &&
+           ranges_overlap(shot_position.x, 0, enemy->position.x, enemy_hitbox_half_width(enemy->type));
+}
+
+static int player_hits_enemy(const Player *player, const Enemy *enemy)
+{
+    return player->position.y == enemy->position.y &&
+           ranges_overlap(player->position.x, 1, enemy->position.x, enemy_hitbox_half_width(enemy->type));
 }
 
 static int score_for_enemy_type(EnemyType type)
@@ -18,6 +37,16 @@ static int score_for_enemy_type(EnemyType type)
     default:
         return 100;
     }
+}
+
+static void damage_player(Player *player)
+{
+    if (player->invulnerable_timer > 0) {
+        return;
+    }
+
+    player->lives -= 1;
+    player->invulnerable_timer = PLAYER_INVULNERABLE_FRAMES;
 }
 
 void collisions_update(GameState *game)
@@ -36,7 +65,7 @@ void collisions_update(GameState *game)
                 continue;
             }
 
-            if (positions_overlap(shot->position, enemy->position)) {
+            if (projectile_hits_enemy(shot->position, enemy)) {
                 shot->active = 0;
                 enemy->health -= 1;
                 if (enemy->health <= 0) {
@@ -58,16 +87,18 @@ void collisions_update(GameState *game)
 
         if (positions_overlap(shot->position, game->player.position)) {
             shot->active = 0;
-            game->player.lives -= 1;
+            damage_player(&game->player);
         }
     }
 
     for (int i = 0; i < MAX_ENEMIES; ++i) {
         Enemy *enemy = &game->enemies[i];
 
-        if (enemy->active && positions_overlap(enemy->position, game->player.position)) {
-            enemy->active = 0;
-            game->player.lives -= 1;
+        if (enemy->active && player_hits_enemy(&game->player, enemy)) {
+            if (enemy_hitbox_half_width(enemy->type) == 0) {
+                enemy->active = 0;
+            }
+            damage_player(&game->player);
         }
     }
 }

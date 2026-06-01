@@ -42,6 +42,7 @@ typedef struct {
     int lives;
     int score;
     int shot_cooldown;
+    int invulnerable_timer;
 } Player;
 
 typedef enum {
