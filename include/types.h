@@ -22,7 +22,9 @@ typedef enum {
     ENEMY_STRAIGHT,
     ENEMY_DIAGONAL,
     ENEMY_ZIGZAG,
-    ENEMY_FAST
+    ENEMY_FAST,
+    ENEMY_MINI_BOSS,
+    ENEMY_STAGE_BOSS
 } EnemyType;
 
 typedef struct {
@@ -59,5 +61,10 @@ typedef enum {
     GAME_SCREEN_PLAYING,
     GAME_SCREEN_GAME_OVER
 } GameScreen;
+
+typedef enum {
+    LEVEL_PHASE_NORMAL,
+    LEVEL_PHASE_BOSS
+} LevelPhase;
 
 #endif

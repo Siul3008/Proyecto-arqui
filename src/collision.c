@@ -8,6 +8,18 @@ static int positions_overlap(Vec2i a, Vec2i b)
     return a.x == b.x && a.y == b.y;
 }
 
+static int score_for_enemy_type(EnemyType type)
+{
+    switch (type) {
+    case ENEMY_MINI_BOSS:
+        return MINI_BOSS_SCORE;
+    case ENEMY_STAGE_BOSS:
+        return STAGE_BOSS_SCORE;
+    default:
+        return 100;
+    }
+}
+
 void collisions_update(GameState *game)
 {
     for (int i = 0; i < MAX_PLAYER_SHOTS; ++i) {
@@ -30,7 +42,7 @@ void collisions_update(GameState *game)
                 if (enemy->health <= 0) {
                     effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION);
                     enemy->active = 0;
-                    game->player.score += 100;
+                    game->player.score += score_for_enemy_type(enemy->type);
                 }
                 break;
             }

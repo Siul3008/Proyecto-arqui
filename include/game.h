@@ -11,9 +11,11 @@ typedef struct {
     Enemy enemies[MAX_ENEMIES];
     Effect effects[MAX_EFFECTS];
     int frame;
-    int wave;
+    int level;
+    int level_start_score;
     int wave_spawned;
     int next_spawn_frame;
+    LevelPhase phase;
     int running;
     GameScreen screen;
 } GameState;

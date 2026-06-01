@@ -60,6 +60,10 @@ static char enemy_char_for_type(EnemyType type)
         return 'z';
     case ENEMY_FAST:
         return 'f';
+    case ENEMY_MINI_BOSS:
+        return 'M';
+    case ENEMY_STAGE_BOSS:
+        return 'B';
     }
 
     return 'v';
@@ -100,8 +104,8 @@ static void render_game_over(const GameState *game)
     attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    mvprintw(GAME_HEIGHT + 6, 0, "Final Score: %06d  Wave: %d  R: restart  Q: quit",
-             game->player.score, game->wave);
+    mvprintw(GAME_HEIGHT + 6, 0, "Final Score: %06d  Level: %d  R: restart  Q: quit",
+             game->player.score, game->level);
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 }
 
@@ -179,8 +183,11 @@ void render_draw(const GameState *game)
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
     mvprintw(0, 0, "Summer Carnival '92: Recca - texto");
-    mvprintw(1, 0, "Score: %06d  Lives: %d  Wave: %d  Controls: W/A/S/D, arrows, Space, Q",
-             game->player.score, game->player.lives, game->wave);
+    mvprintw(1, 0, "Score: %06d  Lives: %d  Level: %d  %s  Controls: W/A/S/D, arrows, Space, Q",
+             game->player.score,
+             game->player.lives,
+             game->level,
+             game->phase == LEVEL_PHASE_BOSS ? "BOSS" : "NORMAL");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));

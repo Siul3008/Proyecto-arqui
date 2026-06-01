@@ -24,6 +24,10 @@ static void move_enemy(Enemy *enemy)
         enemy->position.x += enemy->velocity.x;
         enemy->position.y += enemy->velocity.y + 1;
         break;
+    case ENEMY_MINI_BOSS:
+    case ENEMY_STAGE_BOSS:
+        enemy->position.x += enemy->velocity.x;
+        break;
     }
 }
 
@@ -38,9 +42,25 @@ static int fire_cooldown_for_type(EnemyType type, int slot)
         return 12 + (slot % 4);
     case ENEMY_FAST:
         return 20 + (slot % 6);
+    case ENEMY_MINI_BOSS:
+        return 8;
+    case ENEMY_STAGE_BOSS:
+        return 5;
     }
 
     return 18;
+}
+
+static int health_for_type(EnemyType type)
+{
+    switch (type) {
+    case ENEMY_MINI_BOSS:
+        return MINI_BOSS_HEALTH;
+    case ENEMY_STAGE_BOSS:
+        return STAGE_BOSS_HEALTH;
+    default:
+        return 1;
+    }
 }
 
 void enemies_clear(Enemy enemies[], int count)
@@ -67,7 +87,25 @@ void enemies_spawn(Enemy enemies[], int count, int x, EnemyType type)
             enemies[i].position.y = 0;
             enemies[i].velocity.x = ((x + i) % 2 == 0) ? 1 : -1;
             enemies[i].velocity.y = 1;
-            enemies[i].health = 1;
+            enemies[i].health = health_for_type(type);
+            enemies[i].fire_cooldown = fire_cooldown_for_type(type, i);
+            enemies[i].age = 0;
+            enemies[i].type = type;
+            return;
+        }
+    }
+}
+
+void enemies_spawn_boss(Enemy enemies[], int count, EnemyType type)
+{
+    for (int i = 0; i < count; ++i) {
+        if (!enemies[i].active) {
+            enemies[i].active = 1;
+            enemies[i].position.x = GAME_WIDTH / 2;
+            enemies[i].position.y = 2;
+            enemies[i].velocity.x = 1;
+            enemies[i].velocity.y = 0;
+            enemies[i].health = health_for_type(type);
             enemies[i].fire_cooldown = fire_cooldown_for_type(type, i);
             enemies[i].age = 0;
             enemies[i].type = type;
@@ -90,11 +128,13 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
         }
         enemy->age += 1;
 
-        if (enemy->position.x <= 0 || enemy->position.x >= GAME_WIDTH - 1) {
+        if (enemy->position.x <= 1 || enemy->position.x >= GAME_WIDTH - 2) {
             enemy->velocity.x *= -1;
         }
 
-        if (enemy->position.y >= GAME_HEIGHT) {
+        if (enemy->position.y >= GAME_HEIGHT &&
+            enemy->type != ENEMY_MINI_BOSS &&
+            enemy->type != ENEMY_STAGE_BOSS) {
             enemy->active = 0;
             continue;
         }
@@ -108,6 +148,18 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
             enemy->fire_cooldown = fire_cooldown_for_type(enemy->type, i);
         }
     }
+}
+
+int enemies_has_boss(const Enemy enemies[], int count)
+{
+    for (int i = 0; i < count; ++i) {
+        if (enemies[i].active &&
+            (enemies[i].type == ENEMY_MINI_BOSS || enemies[i].type == ENEMY_STAGE_BOSS)) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 int enemies_active_count(const Enemy enemies[], int count)

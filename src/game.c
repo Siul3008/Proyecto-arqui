@@ -8,7 +8,7 @@
 
 static int enemies_to_spawn_for_wave(int wave)
 {
-    return WAVE_BASE_ENEMY_COUNT + (wave - 1) * 2;
+    return WAVE_BASE_ENEMY_COUNT + (wave - 1);
 }
 
 static int spawn_x_for_wave(const GameState *game)
@@ -29,6 +29,20 @@ static int enemy_move_interval_for_wave(int wave)
     return 1;
 }
 
+static int boss_score_target_for_level(int level)
+{
+    return LEVEL_SCORE_TARGET + (level - 1) * 300;
+}
+
+static EnemyType boss_type_for_level(int level)
+{
+    if (level % 5 == 0) {
+        return ENEMY_STAGE_BOSS;
+    }
+
+    return ENEMY_MINI_BOSS;
+}
+
 static int enemy_shot_move_interval_for_wave(int wave)
 {
     if (wave <= 2) {
@@ -47,17 +61,31 @@ static void reset_run(GameState *game)
     enemies_clear(game->enemies, MAX_ENEMIES);
 
     game->frame = 0;
-    game->wave = 1;
+    game->level = 1;
+    game->level_start_score = game->player.score;
     game->wave_spawned = 0;
     game->next_spawn_frame = 0;
+    game->phase = LEVEL_PHASE_NORMAL;
 }
 
 static void update_wave_spawning(GameState *game)
 {
-    int enemies_in_wave = enemies_to_spawn_for_wave(game->wave);
+    int enemies_in_wave = enemies_to_spawn_for_wave(game->level);
+
+    if (game->phase != LEVEL_PHASE_NORMAL) {
+        return;
+    }
+
+    if (game->player.score - game->level_start_score >= boss_score_target_for_level(game->level)) {
+        enemies_clear(game->enemies, MAX_ENEMIES);
+        projectiles_clear(game->enemy_shots, MAX_ENEMY_SHOTS);
+        enemies_spawn_boss(game->enemies, MAX_ENEMIES, boss_type_for_level(game->level));
+        game->phase = LEVEL_PHASE_BOSS;
+        return;
+    }
 
     if (game->wave_spawned < enemies_in_wave && game->frame >= game->next_spawn_frame) {
-        EnemyType type = enemy_type_for_wave(game->wave, game->wave_spawned);
+        EnemyType type = enemy_type_for_wave(game->level, game->wave_spawned);
         enemies_spawn(game->enemies, MAX_ENEMIES, spawn_x_for_wave(game), type);
         game->wave_spawned += 1;
         game->next_spawn_frame = game->frame + WAVE_SPAWN_INTERVAL;
@@ -66,9 +94,21 @@ static void update_wave_spawning(GameState *game)
 
     if (game->wave_spawned >= enemies_in_wave &&
         enemies_active_count(game->enemies, MAX_ENEMIES) == 0) {
-        game->wave += 1;
+        game->wave_spawned = 0;
+        game->next_spawn_frame = game->frame + (WAVE_BREAK_FRAMES / 2);
+    }
+}
+
+static void update_level_progression(GameState *game)
+{
+    if (game->phase == LEVEL_PHASE_BOSS &&
+        !enemies_has_boss(game->enemies, MAX_ENEMIES)) {
+        game->level += 1;
+        game->level_start_score = game->player.score;
         game->wave_spawned = 0;
         game->next_spawn_frame = game->frame + WAVE_BREAK_FRAMES;
+        game->phase = LEVEL_PHASE_NORMAL;
+        projectiles_clear(game->enemy_shots, MAX_ENEMY_SHOTS);
     }
 }
 
@@ -112,14 +152,15 @@ void game_update(GameState *game, int input_mask)
     projectiles_update(game->enemy_shots,
                        MAX_ENEMY_SHOTS,
                        game->frame,
-                       enemy_shot_move_interval_for_wave(game->wave));
+                       enemy_shot_move_interval_for_wave(game->level));
     enemies_update(game->enemies,
                    MAX_ENEMIES,
                    game->enemy_shots,
                    MAX_ENEMY_SHOTS,
                    game->frame,
-                   enemy_move_interval_for_wave(game->wave));
+                   enemy_move_interval_for_wave(game->level));
     collisions_update(game);
+    update_level_progression(game);
 
     if (game->player.lives <= 0) {
         game->screen = GAME_SCREEN_GAME_OVER;
