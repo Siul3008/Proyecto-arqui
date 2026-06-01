@@ -51,7 +51,7 @@ static int fire_cooldown_for_type(EnemyType type, int slot)
     return 18;
 }
 
-static int health_for_type(EnemyType type)
+int enemy_max_health(EnemyType type)
 {
     switch (type) {
     case ENEMY_MINI_BOSS:
@@ -87,7 +87,7 @@ void enemies_spawn(Enemy enemies[], int count, int x, EnemyType type)
             enemies[i].position.y = 0;
             enemies[i].velocity.x = ((x + i) % 2 == 0) ? 1 : -1;
             enemies[i].velocity.y = 1;
-            enemies[i].health = health_for_type(type);
+            enemies[i].health = enemy_max_health(type);
             enemies[i].fire_cooldown = fire_cooldown_for_type(type, i);
             enemies[i].age = 0;
             enemies[i].type = type;
@@ -105,7 +105,7 @@ void enemies_spawn_boss(Enemy enemies[], int count, EnemyType type)
             enemies[i].position.y = 2;
             enemies[i].velocity.x = 1;
             enemies[i].velocity.y = 0;
-            enemies[i].health = health_for_type(type);
+            enemies[i].health = enemy_max_health(type);
             enemies[i].fire_cooldown = fire_cooldown_for_type(type, i);
             enemies[i].age = 0;
             enemies[i].type = type;
@@ -142,12 +142,40 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
         if (enemy->fire_cooldown > 0) {
             enemy->fire_cooldown -= 1;
         } else {
-            Vec2i shot_position = {enemy->position.x, enemy->position.y + 1};
-            Vec2i shot_velocity = {0, 1};
-            projectiles_spawn(enemy_shots, shot_count, shot_position, shot_velocity);
+            if (enemy->type == ENEMY_STAGE_BOSS) {
+                Vec2i center = {enemy->position.x, enemy->position.y + 1};
+                Vec2i left = {enemy->position.x - 1, enemy->position.y + 1};
+                Vec2i right = {enemy->position.x + 1, enemy->position.y + 1};
+                projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
+                projectiles_spawn(enemy_shots, shot_count, left, (Vec2i){-1, 1});
+                projectiles_spawn(enemy_shots, shot_count, right, (Vec2i){1, 1});
+            } else if (enemy->type == ENEMY_MINI_BOSS) {
+                Vec2i center = {enemy->position.x, enemy->position.y + 1};
+                Vec2i left = {enemy->position.x - 1, enemy->position.y + 1};
+                Vec2i right = {enemy->position.x + 1, enemy->position.y + 1};
+                projectiles_spawn(enemy_shots, shot_count, left, (Vec2i){0, 1});
+                projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
+                projectiles_spawn(enemy_shots, shot_count, right, (Vec2i){0, 1});
+            } else {
+                Vec2i shot_position = {enemy->position.x, enemy->position.y + 1};
+                Vec2i shot_velocity = {0, 1};
+                projectiles_spawn(enemy_shots, shot_count, shot_position, shot_velocity);
+            }
             enemy->fire_cooldown = fire_cooldown_for_type(enemy->type, i);
         }
     }
+}
+
+const Enemy *enemies_find_boss(const Enemy enemies[], int count)
+{
+    for (int i = 0; i < count; ++i) {
+        if (enemies[i].active &&
+            (enemies[i].type == ENEMY_MINI_BOSS || enemies[i].type == ENEMY_STAGE_BOSS)) {
+            return &enemies[i];
+        }
+    }
+
+    return 0;
 }
 
 int enemies_has_boss(const Enemy enemies[], int count)

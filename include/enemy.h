@@ -9,6 +9,8 @@ void enemies_spawn_boss(Enemy enemies[], int count, EnemyType type);
 void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], int shot_count, int frame, int move_interval);
 int enemies_active_count(const Enemy enemies[], int count);
 int enemies_has_boss(const Enemy enemies[], int count);
+const Enemy *enemies_find_boss(const Enemy enemies[], int count);
+int enemy_max_health(EnemyType type);
 EnemyType enemy_type_for_wave(int wave, int spawn_index);
 
 #endif

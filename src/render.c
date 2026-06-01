@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "enemy.h"
 
 enum {
     COLOR_PAIR_PLAYER = 1,
@@ -107,6 +108,26 @@ static void render_game_over(const GameState *game)
     mvprintw(GAME_HEIGHT + 6, 0, "Final Score: %06d  Level: %d  R: restart  Q: quit",
              game->player.score, game->level);
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+}
+
+static void render_boss_health_bar(const GameState *game)
+{
+    const Enemy *boss = enemies_find_boss(game->enemies, MAX_ENEMIES);
+
+    if (boss == 0) {
+        return;
+    }
+
+    int max_health = enemy_max_health(boss->type);
+    int filled = (boss->health * 20) / max_health;
+
+    attron(COLOR_PAIR(COLOR_PAIR_ENEMY));
+    mvprintw(GAME_HEIGHT + 5, 0, "Boss HP: [");
+    for (int i = 0; i < 20; ++i) {
+        addch(i < filled ? '#' : '-');
+    }
+    printw("] %d/%d", boss->health, max_health);
+    attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
 }
 
 void render_init(void)
@@ -227,6 +248,8 @@ void render_draw(const GameState *game)
 
     if (game->screen == GAME_SCREEN_GAME_OVER) {
         render_game_over(game);
+    } else if (game->phase == LEVEL_PHASE_BOSS) {
+        render_boss_health_bar(game);
     }
 
     refresh();
