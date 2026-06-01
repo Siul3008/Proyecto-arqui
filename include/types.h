@@ -49,7 +49,15 @@ typedef enum {
     INPUT_UP = 1 << 2,
     INPUT_DOWN = 1 << 3,
     INPUT_FIRE = 1 << 4,
-    INPUT_QUIT = 1 << 5
+    INPUT_START = 1 << 5,
+    INPUT_RESTART = 1 << 6,
+    INPUT_QUIT = 1 << 7
 } InputMask;
+
+typedef enum {
+    GAME_SCREEN_MENU,
+    GAME_SCREEN_PLAYING,
+    GAME_SCREEN_GAME_OVER
+} GameScreen;
 
 #endif

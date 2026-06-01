@@ -58,9 +58,4 @@ void collisions_update(GameState *game)
             game->player.lives -= 1;
         }
     }
-
-    if (game->player.lives <= 0) {
-        game->game_over = 1;
-        game->running = 0;
-    }
 }

@@ -38,6 +38,20 @@ static int enemy_shot_move_interval_for_wave(int wave)
     return 1;
 }
 
+static void reset_run(GameState *game)
+{
+    player_init(&game->player);
+    projectiles_clear(game->player_shots, MAX_PLAYER_SHOTS);
+    effect_clear(game->effects, MAX_EFFECTS);
+    projectiles_clear(game->enemy_shots, MAX_ENEMY_SHOTS);
+    enemies_clear(game->enemies, MAX_ENEMIES);
+
+    game->frame = 0;
+    game->wave = 1;
+    game->wave_spawned = 0;
+    game->next_spawn_frame = 0;
+}
+
 static void update_wave_spawning(GameState *game)
 {
     int enemies_in_wave = enemies_to_spawn_for_wave(game->wave);
@@ -60,24 +74,31 @@ static void update_wave_spawning(GameState *game)
 
 void game_init(GameState *game)
 {
-    player_init(&game->player);
-    projectiles_clear(game->player_shots, MAX_PLAYER_SHOTS);
-    effect_clear(game->effects, MAX_EFFECTS);
-    projectiles_clear(game->enemy_shots, MAX_ENEMY_SHOTS);
-    enemies_clear(game->enemies, MAX_ENEMIES);
-
-    game->frame = 0;
-    game->wave = 1;
-    game->wave_spawned = 0;
-    game->next_spawn_frame = 0;
+    reset_run(game);
     game->running = 1;
-    game->game_over = 0;
+    game->screen = GAME_SCREEN_MENU;
 }
 
 void game_update(GameState *game, int input_mask)
 {
     if (input_mask & INPUT_QUIT) {
         game->running = 0;
+        return;
+    }
+
+    if (game->screen == GAME_SCREEN_MENU) {
+        if (input_mask & INPUT_START) {
+            reset_run(game);
+            game->screen = GAME_SCREEN_PLAYING;
+        }
+        return;
+    }
+
+    if (game->screen == GAME_SCREEN_GAME_OVER) {
+        if (input_mask & INPUT_RESTART) {
+            reset_run(game);
+            game->screen = GAME_SCREEN_PLAYING;
+        }
         return;
     }
 
@@ -99,6 +120,10 @@ void game_update(GameState *game, int input_mask)
                    game->frame,
                    enemy_move_interval_for_wave(game->wave));
     collisions_update(game);
+
+    if (game->player.lives <= 0) {
+        game->screen = GAME_SCREEN_GAME_OVER;
+    }
 
     game->frame += 1;
     effect_update(game->effects, MAX_EFFECTS);

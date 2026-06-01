@@ -2,6 +2,7 @@
 
 #include <curses.h>
 #include <locale.h>
+#include <string.h>
 
 #include "config.h"
 
@@ -64,6 +65,46 @@ static char enemy_char_for_type(EnemyType type)
     return 'v';
 }
 
+static void render_centered(int row, const char *text)
+{
+    int col = (GAME_WIDTH + 2 - (int)strlen(text)) / 2;
+    if (col < 0) {
+        col = 0;
+    }
+    mvprintw(row, col, "%s", text);
+}
+
+static void render_menu(void)
+{
+    render_clear_screen();
+
+    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    render_centered(4, "SUMMER CARNIVAL '92: RECCA");
+    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    render_centered(7, "Adaptacion en modo texto");
+    render_centered(9, "W/A/S/D o flechas: mover");
+    render_centered(10, "Espacio: disparar");
+    render_centered(11, "Q: salir");
+    render_centered(14, "Presione ENTER para iniciar");
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    refresh();
+}
+
+static void render_game_over(const GameState *game)
+{
+    attron(COLOR_PAIR(COLOR_PAIR_ENEMY));
+    render_centered(GAME_HEIGHT + 5, "GAME OVER");
+    attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    mvprintw(GAME_HEIGHT + 6, 0, "Final Score: %06d  Wave: %d  R: restart  Q: quit",
+             game->player.score, game->wave);
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+}
+
 void render_init(void)
 {
     setlocale(LC_ALL, "");
@@ -101,6 +142,11 @@ void render_draw(const GameState *game)
 {
     char board[GAME_HEIGHT][GAME_WIDTH];
     fill_board(board);
+
+    if (game->screen == GAME_SCREEN_MENU) {
+        render_menu();
+        return;
+    }
 
     for (int i = 0; i < MAX_PLAYER_SHOTS; ++i) {
         if (game->player_shots[i].active) {
@@ -172,10 +218,8 @@ void render_draw(const GameState *game)
     mvaddch(GAME_HEIGHT + 3, GAME_WIDTH + 1, '+');
     attroff(COLOR_PAIR(COLOR_PAIR_BORDER));
 
-    if (game->game_over) {
-        attron(COLOR_PAIR(COLOR_PAIR_ENEMY));
-        mvprintw(GAME_HEIGHT + 5, 0, "GAME OVER");
-        attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
+    if (game->screen == GAME_SCREEN_GAME_OVER) {
+        render_game_over(game);
     }
 
     refresh();
