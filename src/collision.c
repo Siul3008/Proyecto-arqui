@@ -3,6 +3,7 @@
 #include "config.h"
 #include "effect.h"
 #include "enemy.h"
+#include "powerup.h"
 
 static int positions_overlap(Vec2i a, Vec2i b)
 {
@@ -40,6 +41,28 @@ static int score_for_enemy_type(EnemyType type)
     }
 }
 
+static int enemy_should_drop_powerup(const GameState *game, const Enemy *enemy)
+{
+    if (enemy->type == ENEMY_MINI_BOSS || enemy->type == ENEMY_STAGE_BOSS) {
+        return 1;
+    }
+
+    return ((game->frame + enemy->position.x + game->player.score) % POWERUP_DROP_DIVISOR) == 0;
+}
+
+static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
+{
+    if (!enemy_should_drop_powerup(game, enemy)) {
+        return;
+    }
+
+    int seed = game->frame + game->player.score + enemy->position.x + enemy->position.y;
+    powerups_spawn(game->powerups,
+                   MAX_POWERUPS,
+                   enemy->position,
+                   powerup_weapon_for_seed(seed));
+}
+
 static void damage_player(Player *player)
 {
     if (player->invulnerable_timer > 0) {
@@ -71,6 +94,7 @@ void collisions_update(GameState *game)
                 enemy->health -= 1;
                 if (enemy->health <= 0) {
                     effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION);
+                    drop_powerup_from_enemy(game, enemy);
                     enemy->active = 0;
                     game->player.score += score_for_enemy_type(enemy->type);
                 }
@@ -100,6 +124,15 @@ void collisions_update(GameState *game)
                 enemy->active = 0;
             }
             damage_player(&game->player);
+        }
+    }
+
+    for (int i = 0; i < MAX_POWERUPS; ++i) {
+        PowerUp *powerup = &game->powerups[i];
+
+        if (powerup->active && positions_overlap(powerup->position, game->player.position)) {
+            game->player.weapon = powerup->weapon;
+            powerup->active = 0;
         }
     }
 }

@@ -8,6 +8,7 @@ typedef struct {
     Player player;
     Projectile player_shots[MAX_PLAYER_SHOTS];
     Projectile enemy_shots[MAX_ENEMY_SHOTS];
+    PowerUp powerups[MAX_POWERUPS];
     Enemy enemies[MAX_ENEMIES];
     Effect effects[MAX_EFFECTS];
     int frame;

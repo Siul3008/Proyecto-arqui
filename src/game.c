@@ -5,6 +5,7 @@
 #include "player.h"
 #include "projectile.h"
 #include "effect.h"
+#include "powerup.h"
 
 static int spawn_x_for_wave(const GameState *game)
 {
@@ -166,6 +167,7 @@ static void reset_run(GameState *game)
     projectiles_clear(game->player_shots, MAX_PLAYER_SHOTS);
     effect_clear(game->effects, MAX_EFFECTS);
     projectiles_clear(game->enemy_shots, MAX_ENEMY_SHOTS);
+    powerups_clear(game->powerups, MAX_POWERUPS);
     enemies_clear(game->enemies, MAX_ENEMIES);
 
     game->frame = 0;
@@ -254,6 +256,10 @@ void game_update(GameState *game, int input_mask)
                        MAX_ENEMY_SHOTS,
                        game->frame,
                        enemy_shot_move_interval_for_wave(game->level));
+    powerups_update(game->powerups,
+                    MAX_POWERUPS,
+                    game->frame,
+                    POWERUP_MOVE_INTERVAL);
     enemies_update(game->enemies,
                    MAX_ENEMIES,
                    game->enemy_shots,

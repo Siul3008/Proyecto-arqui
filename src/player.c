@@ -13,6 +13,45 @@ void player_init(Player *player)
     player->invulnerable_timer = 0;
     player->charge_frames = 0;
     player->charge_bomb_ready = 0;
+    player->weapon = WEAPON_FRONT;
+}
+
+static void fire_front_weapon(Player *player, Projectile player_shots[], int shot_count)
+{
+    Vec2i shot_position = {player->position.x, player->position.y - 1};
+    Vec2i shot_velocity = {0, -1};
+    projectiles_spawn(player_shots, shot_count, shot_position, shot_velocity);
+}
+
+static void fire_spread_weapon(Player *player, Projectile player_shots[], int shot_count)
+{
+    Vec2i center = {player->position.x, player->position.y - 1};
+    projectiles_spawn(player_shots, shot_count, center, (Vec2i){0, -1});
+    projectiles_spawn(player_shots, shot_count, center, (Vec2i){-1, -1});
+    projectiles_spawn(player_shots, shot_count, center, (Vec2i){1, -1});
+}
+
+static void fire_laser_weapon(Player *player, Projectile player_shots[], int shot_count)
+{
+    Vec2i first = {player->position.x, player->position.y - 1};
+    Vec2i second = {player->position.x, player->position.y - 2};
+    projectiles_spawn(player_shots, shot_count, first, (Vec2i){0, -1});
+    projectiles_spawn(player_shots, shot_count, second, (Vec2i){0, -1});
+}
+
+static void fire_current_weapon(Player *player, Projectile player_shots[], int shot_count)
+{
+    switch (player->weapon) {
+    case WEAPON_FRONT:
+        fire_front_weapon(player, player_shots, shot_count);
+        break;
+    case WEAPON_SPREAD:
+        fire_spread_weapon(player, player_shots, shot_count);
+        break;
+    case WEAPON_LASER:
+        fire_laser_weapon(player, player_shots, shot_count);
+        break;
+    }
 }
 
 void player_update(Player *player, int input_mask, Projectile player_shots[], int shot_count)
@@ -70,9 +109,7 @@ void player_update(Player *player, int input_mask, Projectile player_shots[], in
     player->charge_frames = 0;
 
     if (player->shot_cooldown == 0) {
-        Vec2i shot_position = {player->position.x, player->position.y - 1};
-        Vec2i shot_velocity = {0, -1};
-        projectiles_spawn(player_shots, shot_count, shot_position, shot_velocity);
+        fire_current_weapon(player, player_shots, shot_count);
         player->shot_cooldown = PLAYER_SHOT_COOLDOWN;
     }
 }

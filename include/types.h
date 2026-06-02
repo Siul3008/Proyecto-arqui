@@ -12,6 +12,18 @@ typedef struct {
     int active;
 } Projectile;
 
+typedef enum {
+    WEAPON_FRONT,
+    WEAPON_SPREAD,
+    WEAPON_LASER
+} WeaponType;
+
+typedef struct {
+    Vec2i position;
+    int active;
+    WeaponType weapon;
+} PowerUp;
+
 typedef struct {
     Vec2i position;
     int active;
@@ -45,6 +57,7 @@ typedef struct {
     int invulnerable_timer;
     int charge_frames;
     int charge_bomb_ready;
+    WeaponType weapon;
 } Player;
 
 typedef enum {

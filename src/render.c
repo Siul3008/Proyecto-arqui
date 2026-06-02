@@ -38,6 +38,9 @@ static int color_for_char(char value)
     case '|':
     case '*':
     case 'O':
+    case 'F':
+    case 'S':
+    case 'L':
         return COLOR_PAIR_PLAYER_SHOT;
     case 'v':
     case 'd':
@@ -75,6 +78,34 @@ static char enemy_char_for_type(EnemyType type)
     }
 
     return 'v';
+}
+
+static char weapon_char_for_type(WeaponType weapon)
+{
+    switch (weapon) {
+    case WEAPON_FRONT:
+        return 'F';
+    case WEAPON_SPREAD:
+        return 'S';
+    case WEAPON_LASER:
+        return 'L';
+    }
+
+    return 'F';
+}
+
+static const char *weapon_name_for_type(WeaponType weapon)
+{
+    switch (weapon) {
+    case WEAPON_FRONT:
+        return "FRONT";
+    case WEAPON_SPREAD:
+        return "SPREAD";
+    case WEAPON_LASER:
+        return "LASER";
+    }
+
+    return "FRONT";
 }
 
 static int bounded_enemy_center_x(const Enemy *enemy)
@@ -191,28 +222,6 @@ static void render_boss_health_bar(const GameState *game)
     attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
 }
 
-static void render_boss_debug(const GameState *game)
-{
-    const Enemy *boss = enemies_find_boss(game->enemies, MAX_ENEMIES);
-
-    if (boss == 0) {
-        return;
-    }
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    mvprintw(GAME_HEIGHT + 6, 0,
-             "Boss debug: type=%c x=%d y=%d vx=%d left=%d right=%d limits=%d..%d",
-             enemy_char_for_type(boss->type),
-             boss->position.x,
-             boss->position.y,
-             boss->velocity.x,
-             enemy_left(boss),
-             enemy_right(boss),
-             enemy_min_center_x(boss->type),
-             enemy_max_center_x(boss->type));
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
-}
-
 void render_init(void)
 {
     setlocale(LC_ALL, "");
@@ -268,6 +277,15 @@ void render_draw(const GameState *game)
         }
     }
 
+    for (int i = 0; i < MAX_POWERUPS; ++i) {
+        if (game->powerups[i].active) {
+            put_char(board,
+                     game->powerups[i].position.x,
+                     game->powerups[i].position.y,
+                     weapon_char_for_type(game->powerups[i].weapon));
+        }
+    }
+
     for (int i = 0; i < MAX_ENEMIES; ++i) {
         if (game->enemies[i].active) {
             put_enemy_on_board(board, &game->enemies[i]);
@@ -285,10 +303,11 @@ void render_draw(const GameState *game)
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
     mvprintw(0, 0, "Summer Carnival '92: Recca - texto");
     int charge_percent = (game->player.charge_frames * 100) / PLAYER_CHARGE_MAX;
-    mvprintw(1, 0, "Score: %06d  Lives: %d  Rank: %d  Charge: %3d%%  %s  Next Boss: %d",
+    mvprintw(1, 0, "Score: %06d  Lives: %d  Rank: %d  Weapon: %s  Charge: %3d%%  %s  Next Boss: %d",
              game->player.score,
              game->player.lives,
              game->level,
+             weapon_name_for_type(game->player.weapon),
              charge_percent,
              game->phase == LEVEL_PHASE_BOSS ? "BOSS" : "NORMAL",
              game->next_boss_score);
@@ -345,7 +364,6 @@ void render_draw(const GameState *game)
         render_game_over(game);
     } else if (game->phase == LEVEL_PHASE_BOSS) {
         render_boss_health_bar(game);
-        render_boss_debug(game);
     }
 
     refresh();
