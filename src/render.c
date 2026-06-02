@@ -36,7 +36,7 @@ static int color_for_char(char value)
 {
     switch (value) {
     case '|':
-    case '*':
+    //case '*':
     case 'O':
         return COLOR_PAIR_PLAYER_SHOT;
     case 'v':
