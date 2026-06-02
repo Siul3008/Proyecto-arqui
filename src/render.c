@@ -81,27 +81,58 @@ static char enemy_char_for_type(EnemyType type)
     return 'v';
 }
 
+static int bounded_enemy_center_x(const Enemy *enemy)
+{
+    int left_limit = enemy_min_center_x(enemy->type);
+    int right_limit = enemy_max_center_x(enemy->type);
+
+    if (enemy->position.x < left_limit) {
+        return left_limit;
+    }
+
+    if (enemy->position.x > right_limit) {
+        return right_limit;
+    }
+
+    return enemy->position.x;
+}
+
+static int bounded_enemy_y(const Enemy *enemy)
+{
+    if (enemy->position.y < 0) {
+        return 0;
+    }
+
+    if (enemy->position.y >= GAME_HEIGHT) {
+        return GAME_HEIGHT - 1;
+    }
+
+    return enemy->position.y;
+}
+
 static void put_enemy_on_board(char board[GAME_HEIGHT][GAME_WIDTH], const Enemy *enemy)
 {
+    int draw_y = bounded_enemy_y(enemy);
+
     if (enemy->type == ENEMY_MINI_BOSS) {
         const char *body = "<MMM>";
-        int start_x = enemy->position.x - enemy_hitbox_half_width(enemy->type);
+        int start_x = bounded_enemy_center_x(enemy) - enemy_hitbox_half_width(enemy->type);
         for (int i = 0; body[i] != '\0'; ++i) {
-            put_char(board, start_x + i, enemy->position.y, body[i]);
+            put_char(board, start_x + i, draw_y, body[i]);
         }
         return;
     }
 
     if (enemy->type == ENEMY_STAGE_BOSS) {
         const char *body = "[BBBBB]";
-        int start_x = enemy->position.x - enemy_hitbox_half_width(enemy->type);
+        int start_x = bounded_enemy_center_x(enemy) - enemy_hitbox_half_width(enemy->type);
         for (int i = 0; body[i] != '\0'; ++i) {
-            put_char(board, start_x + i, enemy->position.y, body[i]);
+            put_char(board, start_x + i, draw_y, body[i]);
         }
         return;
     }
 
-    put_char(board, enemy->position.x, enemy->position.y, enemy_char_for_type(enemy->type));
+    put_char(board, bounded_enemy_center_x(enemy), draw_y, enemy_char_for_type(enemy->type));
 }
 
 static void render_centered(int row, const char *text)
@@ -162,6 +193,28 @@ static void render_boss_health_bar(const GameState *game)
     }
     printw("] %d/%d", boss->health, max_health);
     attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
+}
+
+static void render_boss_debug(const GameState *game)
+{
+    const Enemy *boss = enemies_find_boss(game->enemies, MAX_ENEMIES);
+
+    if (boss == 0) {
+        return;
+    }
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    mvprintw(GAME_HEIGHT + 6, 0,
+             "Boss debug: type=%c x=%d y=%d vx=%d left=%d right=%d limits=%d..%d",
+             enemy_char_for_type(boss->type),
+             boss->position.x,
+             boss->position.y,
+             boss->velocity.x,
+             enemy_left(boss),
+             enemy_right(boss),
+             enemy_min_center_x(boss->type),
+             enemy_max_center_x(boss->type));
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 }
 
 void render_init(void)
@@ -284,6 +337,7 @@ void render_draw(const GameState *game)
         render_game_over(game);
     } else if (game->phase == LEVEL_PHASE_BOSS) {
         render_boss_health_bar(game);
+        render_boss_debug(game);
     }
 
     refresh();

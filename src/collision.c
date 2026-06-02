@@ -9,22 +9,23 @@ static int positions_overlap(Vec2i a, Vec2i b)
     return a.x == b.x && a.y == b.y;
 }
 
-static int ranges_overlap(int center_a, int half_a, int center_b, int half_b)
+static int ranges_overlap(int left_a, int right_a, int left_b, int right_b)
 {
-    return center_a - half_a <= center_b + half_b &&
-           center_b - half_b <= center_a + half_a;
+    return left_a <= right_b && left_b <= right_a;
 }
 
 static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
 {
-    return shot_position.y == enemy->position.y &&
-           ranges_overlap(shot_position.x, 0, enemy->position.x, enemy_hitbox_half_width(enemy->type));
+    return shot_position.y >= enemy_top(enemy) &&
+           shot_position.y <= enemy_bottom(enemy) &&
+           shot_position.x >= enemy_left(enemy) &&
+           shot_position.x <= enemy_right(enemy);
 }
 
 static int player_hits_enemy(const Player *player, const Enemy *enemy)
 {
-    return player->position.y == enemy->position.y &&
-           ranges_overlap(player->position.x, 1, enemy->position.x, enemy_hitbox_half_width(enemy->type));
+    return ranges_overlap(player->position.y, player->position.y, enemy_top(enemy), enemy_bottom(enemy)) &&
+           ranges_overlap(player->position.x - 1, player->position.x + 1, enemy_left(enemy), enemy_right(enemy));
 }
 
 static int score_for_enemy_type(EnemyType type)
