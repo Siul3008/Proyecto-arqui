@@ -340,9 +340,21 @@ void render_draw(const GameState *game)
         }
     }
 
-    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
-    mvprintw(game->player.position.y + 3, game->player.position.x, "/⮝\\");
-    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    if (game->player.invulnerable_timer == 0 ||
+        (game->player.invulnerable_timer / 5) % 2 == 0) {
+        attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
+        mvprintw(game->player.position.y + 3, game->player.position.x, "/A\\");
+        attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    }
+
+    if (game->player.charge_frames > 0 && game->player.position.y > 0) {
+        int charge_color = game->player.charge_frames >= PLAYER_CHARGE_RELEASE_MIN ?
+                           COLOR_PAIR_PLAYER_SHOT :
+                           COLOR_PAIR_PLAYER;
+        attron(COLOR_PAIR(charge_color));
+        mvaddch(game->player.position.y + 2, game->player.position.x + 1, 'O');
+        attroff(COLOR_PAIR(charge_color));
+    }
 
     attron(COLOR_PAIR(COLOR_PAIR_BORDER));
     mvaddch(GAME_HEIGHT + 3, 0, '+');
