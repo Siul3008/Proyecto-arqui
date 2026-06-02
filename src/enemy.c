@@ -3,6 +3,33 @@
 #include "config.h"
 #include "projectile.h"
 
+static int enemy_is_boss_type(EnemyType type)
+{
+    return type == ENEMY_MINI_BOSS || type == ENEMY_STAGE_BOSS;
+}
+
+static void move_boss_horizontal(Enemy *enemy)
+{
+    int next_x = enemy->position.x + enemy->velocity.x;
+    int left_limit = enemy_min_center_x(enemy->type);
+    int right_limit = enemy_max_center_x(enemy->type);
+
+    if (enemy->velocity.x == 0) {
+        enemy->velocity.x = 1;
+        next_x = enemy->position.x + enemy->velocity.x;
+    }
+
+    if (next_x <= left_limit) {
+        enemy->position.x = left_limit;
+        enemy->velocity.x = 1;
+    } else if (next_x >= right_limit) {
+        enemy->position.x = right_limit;
+        enemy->velocity.x = -1;
+    } else {
+        enemy->position.x = next_x;
+    }
+}
+
 static void move_enemy(Enemy *enemy)
 {
     switch (enemy->type) {
@@ -26,8 +53,35 @@ static void move_enemy(Enemy *enemy)
         break;
     case ENEMY_MINI_BOSS:
     case ENEMY_STAGE_BOSS:
-        enemy->position.x += enemy->velocity.x;
+        move_boss_horizontal(enemy);
         break;
+    }
+}
+
+static void keep_boss_inside_vertical_bounds(Enemy *enemy)
+{
+    if (!enemy_is_boss_type(enemy->type)) {
+        return;
+    }
+
+    if (enemy->position.y < 0 || enemy->position.y >= GAME_HEIGHT) {
+        enemy->position.y = 2;
+    }
+
+    enemy->velocity.y = 0;
+}
+
+static void keep_enemy_inside_horizontal_bounds(Enemy *enemy)
+{
+    int left_limit = enemy_min_center_x(enemy->type);
+    int right_limit = enemy_max_center_x(enemy->type);
+
+    if (enemy->position.x < left_limit || enemy_left(enemy) < 0) {
+        enemy->position.x = left_limit;
+        enemy->velocity.x = 1;
+    } else if (enemy->position.x > right_limit || enemy_right(enemy) > GAME_WIDTH - 1) {
+        enemy->position.x = right_limit;
+        enemy->velocity.x = -1;
     }
 }
 
@@ -73,6 +127,36 @@ int enemy_hitbox_half_width(EnemyType type)
     default:
         return 0;
     }
+}
+
+int enemy_min_center_x(EnemyType type)
+{
+    return enemy_hitbox_half_width(type);
+}
+
+int enemy_max_center_x(EnemyType type)
+{
+    return GAME_WIDTH - 1 - enemy_hitbox_half_width(type);
+}
+
+int enemy_left(const Enemy *enemy)
+{
+    return enemy->position.x - enemy_hitbox_half_width(enemy->type);
+}
+
+int enemy_right(const Enemy *enemy)
+{
+    return enemy->position.x + enemy_hitbox_half_width(enemy->type);
+}
+
+int enemy_top(const Enemy *enemy)
+{
+    return enemy->position.y;
+}
+
+int enemy_bottom(const Enemy *enemy)
+{
+    return enemy->position.y;
 }
 
 void enemies_clear(Enemy enemies[], int count)
@@ -140,15 +224,11 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
         }
         enemy->age += 1;
 
-        int half_width = enemy_hitbox_half_width(enemy->type);
-        if (enemy->position.x - half_width <= 0 ||
-            enemy->position.x + half_width >= GAME_WIDTH - 1) {
-            enemy->velocity.x *= -1;
-        }
+        keep_enemy_inside_horizontal_bounds(enemy);
+        keep_boss_inside_vertical_bounds(enemy);
 
         if (enemy->position.y >= GAME_HEIGHT &&
-            enemy->type != ENEMY_MINI_BOSS &&
-            enemy->type != ENEMY_STAGE_BOSS) {
+            !enemy_is_boss_type(enemy->type)) {
             enemy->active = 0;
             continue;
         }
@@ -183,8 +263,7 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
 const Enemy *enemies_find_boss(const Enemy enemies[], int count)
 {
     for (int i = 0; i < count; ++i) {
-        if (enemies[i].active &&
-            (enemies[i].type == ENEMY_MINI_BOSS || enemies[i].type == ENEMY_STAGE_BOSS)) {
+        if (enemies[i].active && enemy_is_boss_type(enemies[i].type)) {
             return &enemies[i];
         }
     }
@@ -195,8 +274,7 @@ const Enemy *enemies_find_boss(const Enemy enemies[], int count)
 int enemies_has_boss(const Enemy enemies[], int count)
 {
     for (int i = 0; i < count; ++i) {
-        if (enemies[i].active &&
-            (enemies[i].type == ENEMY_MINI_BOSS || enemies[i].type == ENEMY_STAGE_BOSS)) {
+        if (enemies[i].active && enemy_is_boss_type(enemies[i].type)) {
             return 1;
         }
     }

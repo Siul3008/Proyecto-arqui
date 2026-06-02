@@ -82,18 +82,22 @@ static int projectile_inside_radius(Vec2i projectile, Vec2i center, int radius)
 
 static int enemy_inside_radius(const Enemy *enemy, Vec2i center, int radius)
 {
-    int half_width = enemy_hitbox_half_width(enemy->type);
-    int left = enemy->position.x - half_width;
-    int right = enemy->position.x + half_width;
     int dx = 0;
+    int dy = 0;
 
-    if (center.x < left) {
-        dx = left - center.x;
-    } else if (center.x > right) {
-        dx = center.x - right;
+    if (center.x < enemy_left(enemy)) {
+        dx = enemy_left(enemy) - center.x;
+    } else if (center.x > enemy_right(enemy)) {
+        dx = center.x - enemy_right(enemy);
     }
 
-    return dx + abs_int(enemy->position.y - center.y) <= radius;
+    if (center.y < enemy_top(enemy)) {
+        dy = enemy_top(enemy) - center.y;
+    } else if (center.y > enemy_bottom(enemy)) {
+        dy = center.y - enemy_bottom(enemy);
+    }
+
+    return dx + dy <= radius;
 }
 
 static void spawn_charge_effects(GameState *game, Vec2i center)

@@ -12,6 +12,12 @@ int enemies_has_boss(const Enemy enemies[], int count);
 const Enemy *enemies_find_boss(const Enemy enemies[], int count);
 int enemy_max_health(EnemyType type);
 int enemy_hitbox_half_width(EnemyType type);
+int enemy_min_center_x(EnemyType type);
+int enemy_max_center_x(EnemyType type);
+int enemy_left(const Enemy *enemy);
+int enemy_right(const Enemy *enemy);
+int enemy_top(const Enemy *enemy);
+int enemy_bottom(const Enemy *enemy);
 EnemyType enemy_type_for_wave(int wave, int spawn_index);
 
 #endif
