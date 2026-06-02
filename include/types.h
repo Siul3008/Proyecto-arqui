@@ -14,10 +14,27 @@ typedef struct {
 
 typedef struct {
     Vec2i position;
+    int active;
+    int timer;
+} Effect;
+
+typedef enum {
+    ENEMY_STRAIGHT,
+    ENEMY_DIAGONAL,
+    ENEMY_ZIGZAG,
+    ENEMY_FAST,
+    ENEMY_MINI_BOSS,
+    ENEMY_STAGE_BOSS
+} EnemyType;
+
+typedef struct {
+    Vec2i position;
     Vec2i velocity;
     int active;
     int health;
     int fire_cooldown;
+    int age;
+    EnemyType type;
 } Enemy;
 
 typedef struct {
@@ -25,6 +42,9 @@ typedef struct {
     int lives;
     int score;
     int shot_cooldown;
+    int invulnerable_timer;
+    int charge_frames;
+    int charge_bomb_ready;
 } Player;
 
 typedef enum {
@@ -34,7 +54,20 @@ typedef enum {
     INPUT_UP = 1 << 2,
     INPUT_DOWN = 1 << 3,
     INPUT_FIRE = 1 << 4,
-    INPUT_QUIT = 1 << 5
+    INPUT_START = 1 << 5,
+    INPUT_RESTART = 1 << 6,
+    INPUT_QUIT = 1 << 7
 } InputMask;
+
+typedef enum {
+    GAME_SCREEN_MENU,
+    GAME_SCREEN_PLAYING,
+    GAME_SCREEN_GAME_OVER
+} GameScreen;
+
+typedef enum {
+    LEVEL_PHASE_NORMAL,
+    LEVEL_PHASE_BOSS
+} LevelPhase;
 
 #endif

@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-#include <curses.h>
+#include <ncursesw/curses.h>
 
 int input_poll(void)
 {
@@ -10,6 +10,11 @@ int input_poll(void)
     int character = getch();
 
     switch (character) {
+    case '\n':
+    case '\r':
+    case KEY_ENTER:
+        input |= INPUT_START;
+        break;
     case KEY_LEFT:
     case 'a':
     case 'A':
@@ -32,6 +37,10 @@ int input_poll(void)
         break;
     case ' ':
         input |= INPUT_FIRE;
+        break;
+    case 'r':
+    case 'R':
+        input |= INPUT_RESTART;
         break;
     case 'q':
     case 'Q':

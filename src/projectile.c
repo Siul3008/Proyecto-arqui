@@ -31,8 +31,12 @@ void projectiles_spawn(Projectile projectiles[], int count, Vec2i position, Vec2
     }
 }
 
-void projectiles_update(Projectile projectiles[], int count)
+void projectiles_update(Projectile projectiles[], int count, int frame, int move_interval)
 {
+    if (move_interval <= 0 || frame % move_interval != 0) {
+        return;
+    }
+
     for (int i = 0; i < count; ++i) {
         if (!projectiles[i].active) {
             continue;

@@ -10,10 +10,19 @@ void player_init(Player *player)
     player->lives = PLAYER_START_LIVES;
     player->score = 0;
     player->shot_cooldown = 0;
+    player->invulnerable_timer = 0;
+    player->charge_frames = 0;
+    player->charge_bomb_ready = 0;
 }
 
 void player_update(Player *player, int input_mask, Projectile player_shots[], int shot_count)
 {
+    player->charge_bomb_ready = 0;
+
+    if (player->invulnerable_timer > 0) {
+        player->invulnerable_timer -= 1;
+    }
+
     if (input_mask & INPUT_LEFT) {
         player->position.x -= 1;
     }
@@ -27,11 +36,11 @@ void player_update(Player *player, int input_mask, Projectile player_shots[], in
         player->position.y += 1;
     }
 
-    if (player->position.x < 0) {
-        player->position.x = 0;
+    if (player->position.x < 1) {
+        player->position.x = 1;
     }
-    if (player->position.x >= GAME_WIDTH) {
-        player->position.x = GAME_WIDTH - 1;
+    if (player->position.x >= GAME_WIDTH - 1) {
+        player->position.x = GAME_WIDTH - 2;
     }
     if (player->position.y < 0) {
         player->position.y = 0;
@@ -44,10 +53,26 @@ void player_update(Player *player, int input_mask, Projectile player_shots[], in
         player->shot_cooldown -= 1;
     }
 
-    if ((input_mask & INPUT_FIRE) && player->shot_cooldown == 0) {
+    if (!(input_mask & INPUT_FIRE)) {
+        if (player->charge_frames < PLAYER_CHARGE_MAX) {
+            player->charge_frames += 1;
+        }
+        return;
+    }
+
+    if (player->charge_frames >= PLAYER_CHARGE_RELEASE_MIN) {
+        player->charge_bomb_ready = 1;
+        player->charge_frames = 0;
+        player->shot_cooldown = PLAYER_SHOT_COOLDOWN;
+        return;
+    }
+
+    player->charge_frames = 0;
+
+    if (player->shot_cooldown == 0) {
         Vec2i shot_position = {player->position.x, player->position.y - 1};
         Vec2i shot_velocity = {0, -1};
         projectiles_spawn(player_shots, shot_count, shot_position, shot_velocity);
-        player->shot_cooldown = 3;
+        player->shot_cooldown = PLAYER_SHOT_COOLDOWN;
     }
 }
