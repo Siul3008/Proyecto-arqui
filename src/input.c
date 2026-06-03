@@ -4,10 +4,13 @@
 
 #include <ncursesw/curses.h>
 
+static int last_character = ERR;
+
 int input_poll(void)
 {
     int input = INPUT_NONE;
     int character = getch();
+    last_character = character;
 
     switch (character) {
     case '\n':
@@ -35,6 +38,11 @@ int input_poll(void)
     case 'S':
         input |= INPUT_DOWN;
         break;
+    case KEY_BACKSPACE:
+    case 127:
+    case '\b':
+        input |= INPUT_BACKSPACE;
+        break;
     case ' ':
         input |= INPUT_FIRE;
         break;
@@ -59,4 +67,9 @@ int input_poll(void)
     }
 
     return input;
+}
+
+int input_last_character(void)
+{
+    return last_character;
 }

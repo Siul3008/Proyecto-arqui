@@ -23,6 +23,10 @@ typedef struct {
     GameScreen previous_screen;
     char status_message[STATUS_MESSAGE_LENGTH];
     int status_message_timer;
+    HighScoreEntry high_scores[MAX_HIGH_SCORES];
+    char name_input[PLAYER_NAME_MAX_LENGTH + 1];
+    int name_length;
+    int score_recorded;
 } GameState;
 
 void game_init(GameState *game);

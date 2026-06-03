@@ -5,7 +5,12 @@
 #include "player.h"
 #include "projectile.h"
 #include "effect.h"
+#include "highscore.h"
+#include "input.h"
 #include "powerup.h"
+
+#include <ctype.h>
+#include <string.h>
 
 static int spawn_x_for_wave(const GameState *game)
 {
@@ -190,6 +195,63 @@ static void reset_run(GameState *game)
     game->phase = LEVEL_PHASE_NORMAL;
     game->status_message[0] = '\0';
     game->status_message_timer = 0;
+    game->name_input[0] = '\0';
+    game->name_length = 0;
+    game->score_recorded = 0;
+}
+
+static void begin_name_entry(GameState *game)
+{
+    game->name_input[0] = '\0';
+    game->name_length = 0;
+    game->screen = GAME_SCREEN_NAME_ENTRY;
+}
+
+static void submit_high_score(GameState *game)
+{
+    HighScoreEntry entry;
+
+    if (game->name_length == 0) {
+        strncpy(game->name_input, "PLAYER", PLAYER_NAME_MAX_LENGTH);
+        game->name_input[PLAYER_NAME_MAX_LENGTH] = '\0';
+    }
+
+    strncpy(entry.name, game->name_input, PLAYER_NAME_MAX_LENGTH);
+    entry.name[PLAYER_NAME_MAX_LENGTH] = '\0';
+    entry.score = game->player.score;
+    entry.rank = game->level;
+    entry.bosses = game->boss_count;
+
+    highscores_add(game->high_scores, MAX_HIGH_SCORES, entry);
+    highscores_save(game->high_scores, MAX_HIGH_SCORES, HIGHSCORE_FILE_NAME);
+
+    game->score_recorded = 1;
+    game->screen = GAME_SCREEN_GAME_OVER;
+}
+
+static void update_name_entry(GameState *game, int input_mask)
+{
+    int character = input_last_character();
+
+    if (input_mask & INPUT_START) {
+        submit_high_score(game);
+        return;
+    }
+
+    if ((input_mask & INPUT_BACKSPACE) && game->name_length > 0) {
+        game->name_length -= 1;
+        game->name_input[game->name_length] = '\0';
+        return;
+    }
+
+    if (character >= 0 &&
+        character <= 255 &&
+        isalnum((unsigned char)character) &&
+        game->name_length < PLAYER_NAME_MAX_LENGTH) {
+        game->name_input[game->name_length] = (char)toupper((unsigned char)character);
+        game->name_length += 1;
+        game->name_input[game->name_length] = '\0';
+    }
 }
 
 static void update_wave_spawning(GameState *game)
@@ -230,6 +292,7 @@ static void update_level_progression(GameState *game)
 void game_init(GameState *game)
 {
     reset_run(game);
+    highscores_load(game->high_scores, MAX_HIGH_SCORES, HIGHSCORE_FILE_NAME);
     game->running = 1;
     game->screen = GAME_SCREEN_MENU;
     game->previous_screen = GAME_SCREEN_MENU;
@@ -237,6 +300,11 @@ void game_init(GameState *game)
 
 void game_update(GameState *game, int input_mask)
 {
+    if (game->screen == GAME_SCREEN_NAME_ENTRY) {
+        update_name_entry(game, input_mask);
+        return;
+    }
+
     if (input_mask & INPUT_QUIT) {
         game->running = 0;
         return;
@@ -315,7 +383,11 @@ void game_update(GameState *game, int input_mask)
     }
 
     if (game->player.lives <= 0) {
-        game->screen = GAME_SCREEN_GAME_OVER;
+        if (!game->score_recorded) {
+            begin_name_entry(game);
+        } else {
+            game->screen = GAME_SCREEN_GAME_OVER;
+        }
     }
 
     game->frame += 1;

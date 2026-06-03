@@ -1,6 +1,8 @@
 #ifndef RECCA_TYPES_H
 #define RECCA_TYPES_H
 
+#include "config.h"
+
 typedef struct {
     int x;
     int y;
@@ -11,6 +13,13 @@ typedef struct {
     Vec2i velocity;
     int active;
 } Projectile;
+
+typedef struct {
+    char name[PLAYER_NAME_MAX_LENGTH + 1];
+    int score;
+    int rank;
+    int bosses;
+} HighScoreEntry;
 
 typedef enum {
     WEAPON_FRONT,
@@ -80,7 +89,8 @@ typedef enum {
     INPUT_RESTART = 1 << 6,
     INPUT_QUIT = 1 << 7,
     INPUT_PAUSE = 1 << 8,
-    INPUT_HELP = 1 << 9
+    INPUT_HELP = 1 << 9,
+    INPUT_BACKSPACE = 1 << 10
 } InputMask;
 
 typedef enum {
@@ -88,6 +98,7 @@ typedef enum {
     GAME_SCREEN_PLAYING,
     GAME_SCREEN_PAUSED,
     GAME_SCREEN_HELP,
+    GAME_SCREEN_NAME_ENTRY,
     GAME_SCREEN_GAME_OVER
 } GameScreen;
 

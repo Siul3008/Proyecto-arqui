@@ -8,6 +8,9 @@
 #define MAX_ENEMIES 16
 #define MAX_ENEMY_SHOTS 40
 #define MAX_POWERUPS 6
+#define MAX_HIGH_SCORES 5
+#define PLAYER_NAME_MAX_LENGTH 10
+#define HIGHSCORE_FILE_NAME "highscores.txt"
 
 #define MAX_EFFECTS 16
 #define EXPLOSION_DURATION 5

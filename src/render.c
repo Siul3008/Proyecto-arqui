@@ -245,7 +245,7 @@ static void render_help(void)
 
 static void render_game_over(const GameState *game)
 {
-    char line[40];
+    char line[64];
 
     attron(COLOR_PAIR(COLOR_PAIR_ENEMY));
     render_centered(GAME_HEIGHT / 2, "GAME OVER");
@@ -259,8 +259,60 @@ static void render_game_over(const GameState *game)
     render_centered(GAME_HEIGHT / 2 + 5, line);
     snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
     render_centered(GAME_HEIGHT / 2 + 6, line);
-    render_centered(GAME_HEIGHT / 2 + 8, "R: restart  H: help  Q: quit");
+    render_centered(GAME_HEIGHT / 2 + 8, "HIGH SCORES");
+
+    for (int i = 0; i < MAX_HIGH_SCORES; ++i) {
+        const HighScoreEntry *entry = &game->high_scores[i];
+
+        if (entry->score > 0) {
+            snprintf(line,
+                     sizeof(line),
+                     "%d. %-10s %06d R:%d B:%d",
+                     i + 1,
+                     entry->name,
+                     entry->score,
+                     entry->rank,
+                     entry->bosses);
+        } else {
+            snprintf(line, sizeof(line), "%d. ---------- ------", i + 1);
+        }
+
+        render_centered(GAME_HEIGHT / 2 + 10 + i, line);
+    }
+
+    render_centered(GAME_HEIGHT / 2 + 16, "R: restart  H: help  Q: quit");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+}
+
+static void render_name_entry(const GameState *game)
+{
+    char line[64];
+
+    render_clear_screen();
+
+    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    render_centered(4, "NEW HIGH SCORE");
+    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    snprintf(line, sizeof(line), "Score : %06d", game->player.score);
+    render_centered(7, line);
+    snprintf(line, sizeof(line), "Rank  : %d", game->level);
+    render_centered(8, line);
+    snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
+    render_centered(9, line);
+
+    snprintf(line,
+             sizeof(line),
+             "Name  : %-10s%s",
+             game->name_input,
+             game->name_length < PLAYER_NAME_MAX_LENGTH ? "_" : "");
+    render_centered(12, line);
+    render_centered(15, "Letters and numbers only, max 10");
+    render_centered(16, "ENTER: save  BACKSPACE: delete");
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    refresh();
 }
 
 static void render_pause_overlay(void)
@@ -336,6 +388,11 @@ void render_draw(const GameState *game)
 
     if (game->screen == GAME_SCREEN_HELP) {
         render_help();
+        return;
+    }
+
+    if (game->screen == GAME_SCREEN_NAME_ENTRY) {
+        render_name_entry(game);
         return;
     }
 
