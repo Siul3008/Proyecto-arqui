@@ -13,7 +13,9 @@ void player_init(Player *player)
     player->invulnerable_timer = 0;
     player->charge_frames = 0;
     player->charge_bomb_ready = 0;
-    player->drone_count = MAX_PLAYER_DRONES;
+    player->drone_count = 0;
+    player->drone_timer = 0;
+    player->weapon_timer = 0;
     player->weapon = WEAPON_FRONT;
 }
 
@@ -101,6 +103,18 @@ void player_update(Player *player, int input_mask, Projectile player_shots[], in
 
     if (player->invulnerable_timer > 0) {
         player->invulnerable_timer -= 1;
+    }
+    if (player->weapon_timer > 0) {
+        player->weapon_timer -= 1;
+        if (player->weapon_timer == 0) {
+            player->weapon = WEAPON_FRONT;
+        }
+    }
+    if (player->drone_timer > 0) {
+        player->drone_timer -= 1;
+        if (player->drone_timer == 0) {
+            player->drone_count = 0;
+        }
     }
 
     if (input_mask & INPUT_LEFT) {

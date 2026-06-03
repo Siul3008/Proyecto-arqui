@@ -57,10 +57,14 @@ static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
     }
 
     int seed = game->frame + game->player.score + enemy->position.x + enemy->position.y;
-    powerups_spawn(game->powerups,
-                   MAX_POWERUPS,
-                   enemy->position,
-                   powerup_weapon_for_seed(seed));
+    if (powerup_type_for_seed(seed) == POWERUP_DRONE) {
+        powerups_spawn_drone(game->powerups, MAX_POWERUPS, enemy->position);
+    } else {
+        powerups_spawn_weapon(game->powerups,
+                              MAX_POWERUPS,
+                              enemy->position,
+                              powerup_weapon_for_seed(seed));
+    }
 }
 
 static void damage_player(Player *player)
@@ -131,7 +135,13 @@ void collisions_update(GameState *game)
         PowerUp *powerup = &game->powerups[i];
 
         if (powerup->active && positions_overlap(powerup->position, game->player.position)) {
-            game->player.weapon = powerup->weapon;
+            if (powerup->type == POWERUP_DRONE) {
+                game->player.drone_count = MAX_PLAYER_DRONES;
+                game->player.drone_timer = PLAYER_DRONE_DURATION_FRAMES;
+            } else {
+                game->player.weapon = powerup->weapon;
+                game->player.weapon_timer = PLAYER_WEAPON_DURATION_FRAMES;
+            }
             powerup->active = 0;
         }
     }

@@ -43,6 +43,7 @@ static int color_for_char(char value)
     case 'F':
     case 'S':
     case 'L':
+    case 'D':
         return COLOR_PAIR_PLAYER_SHOT;
     case 'v':
     case 'd':
@@ -100,6 +101,15 @@ static char weapon_char_for_type(WeaponType weapon)
     return 'F';
 }
 
+static char powerup_char_for_type(const PowerUp *powerup)
+{
+    if (powerup->type == POWERUP_DRONE) {
+        return 'D';
+    }
+
+    return weapon_char_for_type(powerup->weapon);
+}
+
 static const char *weapon_name_for_type(WeaponType weapon)
 {
     switch (weapon) {
@@ -112,6 +122,17 @@ static const char *weapon_name_for_type(WeaponType weapon)
     }
 
     return "FRONT";
+}
+
+static int timer_seconds(int frames)
+{
+    int frames_per_second = 1000 / FRAME_DELAY_MS;
+
+    if (frames_per_second <= 0) {
+        return 0;
+    }
+
+    return frames / frames_per_second;
 }
 
 static int bounded_enemy_center_x(const Enemy *enemy)
@@ -288,7 +309,7 @@ void render_draw(const GameState *game)
             put_char(board,
                      game->powerups[i].position.x,
                      game->powerups[i].position.y,
-                     weapon_char_for_type(game->powerups[i].weapon));
+                     powerup_char_for_type(&game->powerups[i]));
         }
     }
 
@@ -309,11 +330,14 @@ void render_draw(const GameState *game)
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
     mvprintw(0, 0, "Summer Carnival '92: Recca - texto");
     int charge_percent = (game->player.charge_frames * 100) / PLAYER_CHARGE_MAX;
-    mvprintw(1, 0, "Score: %06d  Lives: %d  Rank: %d  Weapon: %s  Charge: %3d%%  %s  Next Boss: %d",
+    mvprintw(1, 0, "Score:%06d Lives:%d Rank:%d W:%s %02ds D:%d %02ds Charge:%3d%% %s Next:%d",
              game->player.score,
              game->player.lives,
              game->level,
              weapon_name_for_type(game->player.weapon),
+             timer_seconds(game->player.weapon_timer),
+             game->player.drone_count,
+             timer_seconds(game->player.drone_timer),
              charge_percent,
              game->phase == LEVEL_PHASE_BOSS ? "BOSS" : "NORMAL",
              game->next_boss_score);

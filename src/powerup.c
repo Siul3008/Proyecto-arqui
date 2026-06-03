@@ -14,20 +14,32 @@ void powerups_clear(PowerUp powerups[], int count)
         powerups[i].active = 0;
         powerups[i].position.x = 0;
         powerups[i].position.y = 0;
+        powerups[i].type = POWERUP_WEAPON;
         powerups[i].weapon = WEAPON_FRONT;
     }
 }
 
-void powerups_spawn(PowerUp powerups[], int count, Vec2i position, WeaponType weapon)
+static void powerups_spawn(PowerUp powerups[], int count, Vec2i position, PowerUpType type, WeaponType weapon)
 {
     for (int i = 0; i < count; ++i) {
         if (!powerups[i].active) {
             powerups[i].active = 1;
             powerups[i].position = position;
+            powerups[i].type = type;
             powerups[i].weapon = weapon;
             return;
         }
     }
+}
+
+void powerups_spawn_weapon(PowerUp powerups[], int count, Vec2i position, WeaponType weapon)
+{
+    powerups_spawn(powerups, count, position, POWERUP_WEAPON, weapon);
+}
+
+void powerups_spawn_drone(PowerUp powerups[], int count, Vec2i position)
+{
+    powerups_spawn(powerups, count, position, POWERUP_DRONE, WEAPON_FRONT);
 }
 
 void powerups_update(PowerUp powerups[], int count, int frame, int move_interval)
@@ -59,4 +71,9 @@ WeaponType powerup_weapon_for_seed(int seed)
     default:
         return WEAPON_LASER;
     }
+}
+
+PowerUpType powerup_type_for_seed(int seed)
+{
+    return seed % 5 == 0 ? POWERUP_DRONE : POWERUP_WEAPON;
 }

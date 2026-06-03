@@ -18,9 +18,15 @@ typedef enum {
     WEAPON_LASER
 } WeaponType;
 
+typedef enum {
+    POWERUP_WEAPON,
+    POWERUP_DRONE
+} PowerUpType;
+
 typedef struct {
     Vec2i position;
     int active;
+    PowerUpType type;
     WeaponType weapon;
 } PowerUp;
 
@@ -58,6 +64,8 @@ typedef struct {
     int charge_frames;
     int charge_bomb_ready;
     int drone_count;
+    int drone_timer;
+    int weapon_timer;
     WeaponType weapon;
 } Player;
 
