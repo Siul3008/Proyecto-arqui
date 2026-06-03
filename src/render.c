@@ -38,7 +38,6 @@ static int color_for_char(char value)
 {
     switch (value) {
     case '|':
-    //case '*':
     case 'O':
     case '@':
     case 'F':
