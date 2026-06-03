@@ -57,6 +57,7 @@ typedef struct {
     int invulnerable_timer;
     int charge_frames;
     int charge_bomb_ready;
+    int drone_count;
     WeaponType weapon;
 } Player;
 

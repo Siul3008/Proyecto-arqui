@@ -6,6 +6,7 @@
 
 #include "config.h"
 #include "enemy.h"
+#include "player.h"
 
 enum {
     COLOR_PAIR_PLAYER = 1,
@@ -38,6 +39,7 @@ static int color_for_char(char value)
     case '|':
     //case '*':
     case 'O':
+    case '@':
     case 'F':
     case 'S':
     case 'L':
@@ -346,6 +348,13 @@ void render_draw(const GameState *game)
         mvprintw(game->player.position.y + 3, game->player.position.x, "/A\\");
         attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
     }
+
+    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    for (int i = 0; i < game->player.drone_count; ++i) {
+        Vec2i drone = player_drone_position(&game->player, i);
+        mvaddch(drone.y + 3, drone.x + 1, '@');
+    }
+    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
 
     if (game->player.charge_frames > 0 && game->player.position.y > 0) {
         int charge_color = game->player.charge_frames >= PLAYER_CHARGE_RELEASE_MIN ?

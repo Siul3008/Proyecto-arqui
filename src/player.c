@@ -13,7 +13,48 @@ void player_init(Player *player)
     player->invulnerable_timer = 0;
     player->charge_frames = 0;
     player->charge_bomb_ready = 0;
+    player->drone_count = MAX_PLAYER_DRONES;
     player->weapon = WEAPON_FRONT;
+}
+
+static int clamp_int(int value, int min_value, int max_value)
+{
+    if (value < min_value) {
+        return min_value;
+    }
+
+    if (value > max_value) {
+        return max_value;
+    }
+
+    return value;
+}
+
+Vec2i player_drone_position(const Player *player, int drone_index)
+{
+    int direction = drone_index == 0 ? -1 : 1;
+    Vec2i position = {
+        player->position.x + direction * PLAYER_DRONE_OFFSET_X,
+        player->position.y + PLAYER_DRONE_OFFSET_Y
+    };
+
+    position.x = clamp_int(position.x, 1, GAME_WIDTH - 2);
+    position.y = clamp_int(position.y, 0, GAME_HEIGHT - 1);
+
+    return position;
+}
+
+static void fire_drones(Player *player, Projectile player_shots[], int shot_count)
+{
+    for (int i = 0; i < player->drone_count; ++i) {
+        Vec2i drone = player_drone_position(player, i);
+        Vec2i shot_position = {drone.x, drone.y - 1};
+        Vec2i shot_velocity = {0, -1};
+
+        if (shot_position.y >= 0) {
+            projectiles_spawn(player_shots, shot_count, shot_position, shot_velocity);
+        }
+    }
 }
 
 static void fire_front_weapon(Player *player, Projectile player_shots[], int shot_count)
@@ -110,6 +151,7 @@ void player_update(Player *player, int input_mask, Projectile player_shots[], in
 
     if (player->shot_cooldown == 0) {
         fire_current_weapon(player, player_shots, shot_count);
+        fire_drones(player, player_shots, shot_count);
         player->shot_cooldown = PLAYER_SHOT_COOLDOWN;
     }
 }
