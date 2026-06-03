@@ -255,6 +255,18 @@ void game_update(GameState *game, int input_mask)
         return;
     }
 
+    if (game->screen == GAME_SCREEN_PAUSED) {
+        if (input_mask & INPUT_PAUSE) {
+            game->screen = GAME_SCREEN_PLAYING;
+        }
+        return;
+    }
+
+    if (input_mask & INPUT_PAUSE) {
+        game->screen = GAME_SCREEN_PAUSED;
+        return;
+    }
+
     player_update(&game->player, input_mask, game->player_shots, MAX_PLAYER_SHOTS);
     apply_charge_bomb(game);
     update_wave_spawning(game);

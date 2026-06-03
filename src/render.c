@@ -229,6 +229,14 @@ static void render_game_over(const GameState *game)
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 }
 
+static void render_pause_overlay(void)
+{
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    render_centered(GAME_HEIGHT / 2 + 2, "PAUSED");
+    render_centered(GAME_HEIGHT / 2 + 4, "P: resume  Q: quit");
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+}
+
 static void render_boss_health_bar(const GameState *game)
 {
     const Enemy *boss = enemies_find_boss(game->enemies, MAX_ENEMIES);
@@ -399,6 +407,8 @@ void render_draw(const GameState *game)
 
     if (game->screen == GAME_SCREEN_GAME_OVER) {
         render_game_over(game);
+    } else if (game->screen == GAME_SCREEN_PAUSED) {
+        render_pause_overlay();
     } else if (game->phase == LEVEL_PHASE_BOSS) {
         render_boss_health_bar(game);
     }
