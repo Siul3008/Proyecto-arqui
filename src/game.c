@@ -230,12 +230,26 @@ void game_init(GameState *game)
     reset_run(game);
     game->running = 1;
     game->screen = GAME_SCREEN_MENU;
+    game->previous_screen = GAME_SCREEN_MENU;
 }
 
 void game_update(GameState *game, int input_mask)
 {
     if (input_mask & INPUT_QUIT) {
         game->running = 0;
+        return;
+    }
+
+    if (game->screen == GAME_SCREEN_HELP) {
+        if (input_mask & (INPUT_HELP | INPUT_START | INPUT_PAUSE)) {
+            game->screen = game->previous_screen;
+        }
+        return;
+    }
+
+    if (input_mask & INPUT_HELP) {
+        game->previous_screen = game->screen;
+        game->screen = GAME_SCREEN_HELP;
         return;
     }
 

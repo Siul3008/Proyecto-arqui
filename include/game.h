@@ -20,6 +20,7 @@ typedef struct {
     LevelPhase phase;
     int running;
     GameScreen screen;
+    GameScreen previous_screen;
 } GameState;
 
 void game_init(GameState *game);

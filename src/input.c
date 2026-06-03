@@ -46,6 +46,10 @@ int input_poll(void)
     case 'P':
         input |= INPUT_PAUSE;
         break;
+    case 'h':
+    case 'H':
+        input |= INPUT_HELP;
+        break;
     case 'q':
     case 'Q':
         input |= INPUT_QUIT;

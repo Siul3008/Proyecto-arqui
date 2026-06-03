@@ -210,8 +210,33 @@ static void render_menu(void)
     render_centered(7, "Adaptacion en modo texto");
     render_centered(9, "W/A/S/D o flechas: mover");
     render_centered(10, "Espacio: disparar");
-    render_centered(11, "Q: salir");
+    render_centered(11, "H: ayuda");
+    render_centered(12, "Q: salir");
     render_centered(14, "Presione ENTER para iniciar");
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    refresh();
+}
+
+static void render_help(void)
+{
+    render_clear_screen();
+
+    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));
+    render_centered(3, "CONTROLES");
+    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    render_centered(6, "W/A/S/D o flechas: mover");
+    render_centered(7, "Espacio: disparar");
+    render_centered(8, "Soltar espacio: cargar bomba");
+    render_centered(9, "Volver a presionar espacio: liberar bomba");
+    render_centered(11, "F/S/L: armas temporales");
+    render_centered(12, "D: drones temporales");
+    render_centered(13, "P: pausa");
+    render_centered(14, "R: reiniciar en Game Over");
+    render_centered(15, "Q: salir");
+    render_centered(18, "H, P o ENTER: volver");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     refresh();
@@ -297,6 +322,11 @@ void render_draw(const GameState *game)
 
     if (game->screen == GAME_SCREEN_MENU) {
         render_menu();
+        return;
+    }
+
+    if (game->screen == GAME_SCREEN_HELP) {
+        render_help();
         return;
     }
 
