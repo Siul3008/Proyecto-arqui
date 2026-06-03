@@ -15,14 +15,25 @@ static int spawn_x_for_wave(const GameState *game)
 
 static int enemy_move_interval_for_wave(int wave)
 {
-    if (wave <= 1) {
+    if (wave <= 3) {
         return ENEMY_BASE_MOVE_INTERVAL;
     }
-    if (wave <= 3) {
+    if (wave <= 8) {
         return ENEMY_BASE_MOVE_INTERVAL - 1;
     }
 
-    return 1;
+    return ENEMY_BASE_MOVE_INTERVAL - 2;
+}
+
+static int enemy_spawn_interval_for_rank(int rank)
+{
+    int speedup = rank / 3;
+
+    if (speedup > 5) {
+        speedup = 5;
+    }
+
+    return WAVE_SPAWN_INTERVAL - speedup;
 }
 
 static int rank_for_score(int score)
@@ -46,7 +57,7 @@ static EnemyType boss_type_for_count(int boss_count)
 
 static int enemy_shot_move_interval_for_wave(int wave)
 {
-    if (wave <= 2) {
+    if (wave <= 8) {
         return ENEMY_SHOT_BASE_MOVE_INTERVAL;
     }
 
@@ -197,7 +208,7 @@ static void update_wave_spawning(GameState *game)
         EnemyType type = enemy_type_for_wave(game->level, game->wave_spawned);
         enemies_spawn(game->enemies, MAX_ENEMIES, spawn_x_for_wave(game), type);
         game->wave_spawned += 1;
-        game->next_spawn_frame = game->frame + WAVE_SPAWN_INTERVAL - (game->level > 5 ? 5 : game->level);
+        game->next_spawn_frame = game->frame + enemy_spawn_interval_for_rank(game->level);
     }
 }
 

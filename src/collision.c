@@ -57,7 +57,22 @@ static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
     }
 
     int seed = game->frame + game->player.score + enemy->position.x + enemy->position.y;
-    if (powerup_type_for_seed(seed) == POWERUP_DRONE) {
+
+    if (enemy->type == ENEMY_STAGE_BOSS) {
+        powerups_spawn_drone(game->powerups, MAX_POWERUPS, enemy->position);
+        powerups_spawn_weapon(game->powerups, MAX_POWERUPS, (Vec2i){enemy->position.x, enemy->position.y + 1}, WEAPON_LASER);
+        return;
+    }
+
+    if (enemy->type == ENEMY_MINI_BOSS) {
+        powerups_spawn_weapon(game->powerups,
+                              MAX_POWERUPS,
+                              enemy->position,
+                              seed % 2 == 0 ? WEAPON_SPREAD : WEAPON_LASER);
+        return;
+    }
+
+    if (seed % 12 == 0) {
         powerups_spawn_drone(game->powerups, MAX_POWERUPS, enemy->position);
     } else {
         powerups_spawn_weapon(game->powerups,

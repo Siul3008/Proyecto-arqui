@@ -91,18 +91,60 @@ static int fire_cooldown_for_type(EnemyType type, int slot)
     case ENEMY_STRAIGHT:
         return 18 + (slot % 4);
     case ENEMY_DIAGONAL:
-        return 14 + (slot % 5);
+        return 15 + (slot % 5);
     case ENEMY_ZIGZAG:
-        return 12 + (slot % 4);
+        return 13 + (slot % 4);
     case ENEMY_FAST:
-        return 20 + (slot % 6);
+        return 18 + (slot % 6);
     case ENEMY_MINI_BOSS:
-        return 8;
+        return 12;
     case ENEMY_STAGE_BOSS:
-        return 5;
+        return 9;
     }
 
     return 18;
+}
+
+static void fire_mini_boss_pattern(const Enemy *enemy, Projectile enemy_shots[], int shot_count)
+{
+    Vec2i center = {enemy->position.x, enemy->position.y + 1};
+    Vec2i left = {enemy->position.x - 1, enemy->position.y + 1};
+    Vec2i right = {enemy->position.x + 1, enemy->position.y + 1};
+
+    if ((enemy->age / 40) % 2 == 0) {
+        projectiles_spawn(enemy_shots, shot_count, left, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, right, (Vec2i){0, 1});
+    } else {
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){-1, 1});
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){1, 1});
+    }
+}
+
+static void fire_stage_boss_pattern(const Enemy *enemy, Projectile enemy_shots[], int shot_count)
+{
+    Vec2i center = {enemy->position.x, enemy->position.y + 1};
+    Vec2i far_left = {enemy->position.x - 2, enemy->position.y + 1};
+    Vec2i left = {enemy->position.x - 1, enemy->position.y + 1};
+    Vec2i right = {enemy->position.x + 1, enemy->position.y + 1};
+    Vec2i far_right = {enemy->position.x + 2, enemy->position.y + 1};
+    int pattern = (enemy->age / 50) % 3;
+
+    if (pattern == 0) {
+        projectiles_spawn(enemy_shots, shot_count, far_left, (Vec2i){-1, 1});
+        projectiles_spawn(enemy_shots, shot_count, left, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, right, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, far_right, (Vec2i){1, 1});
+    } else if (pattern == 1) {
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){-1, 1});
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){1, 1});
+    } else {
+        projectiles_spawn(enemy_shots, shot_count, far_left, (Vec2i){0, 1});
+        projectiles_spawn(enemy_shots, shot_count, far_right, (Vec2i){0, 1});
+    }
 }
 
 int enemy_max_health(EnemyType type)
@@ -237,19 +279,9 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
             enemy->fire_cooldown -= 1;
         } else {
             if (enemy->type == ENEMY_STAGE_BOSS) {
-                Vec2i center = {enemy->position.x, enemy->position.y + 1};
-                Vec2i left = {enemy->position.x - 1, enemy->position.y + 1};
-                Vec2i right = {enemy->position.x + 1, enemy->position.y + 1};
-                projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
-                projectiles_spawn(enemy_shots, shot_count, left, (Vec2i){-1, 1});
-                projectiles_spawn(enemy_shots, shot_count, right, (Vec2i){1, 1});
+                fire_stage_boss_pattern(enemy, enemy_shots, shot_count);
             } else if (enemy->type == ENEMY_MINI_BOSS) {
-                Vec2i center = {enemy->position.x, enemy->position.y + 1};
-                Vec2i left = {enemy->position.x - 1, enemy->position.y + 1};
-                Vec2i right = {enemy->position.x + 1, enemy->position.y + 1};
-                projectiles_spawn(enemy_shots, shot_count, left, (Vec2i){0, 1});
-                projectiles_spawn(enemy_shots, shot_count, center, (Vec2i){0, 1});
-                projectiles_spawn(enemy_shots, shot_count, right, (Vec2i){0, 1});
+                fire_mini_boss_pattern(enemy, enemy_shots, shot_count);
             } else {
                 Vec2i shot_position = {enemy->position.x, enemy->position.y + 1};
                 Vec2i shot_velocity = {0, 1};
