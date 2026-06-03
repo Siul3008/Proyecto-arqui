@@ -21,6 +21,8 @@ typedef struct {
     int running;
     GameScreen screen;
     GameScreen previous_screen;
+    char status_message[STATUS_MESSAGE_LENGTH];
+    int status_message_timer;
 } GameState;
 
 void game_init(GameState *game);

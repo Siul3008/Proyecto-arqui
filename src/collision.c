@@ -5,6 +5,8 @@
 #include "enemy.h"
 #include "powerup.h"
 
+#include <string.h>
+
 static int positions_overlap(Vec2i a, Vec2i b)
 {
     return a.x == b.x && a.y == b.y;
@@ -92,6 +94,13 @@ static void damage_player(Player *player)
     player->invulnerable_timer = PLAYER_INVULNERABLE_FRAMES;
 }
 
+static void set_status_message(GameState *game, const char *message)
+{
+    strncpy(game->status_message, message, STATUS_MESSAGE_LENGTH - 1);
+    game->status_message[STATUS_MESSAGE_LENGTH - 1] = '\0';
+    game->status_message_timer = STATUS_MESSAGE_DURATION;
+}
+
 void collisions_update(GameState *game)
 {
     for (int i = 0; i < MAX_PLAYER_SHOTS; ++i) {
@@ -153,9 +162,21 @@ void collisions_update(GameState *game)
             if (powerup->type == POWERUP_DRONE) {
                 game->player.drone_count = MAX_PLAYER_DRONES;
                 game->player.drone_timer = PLAYER_DRONE_DURATION_FRAMES;
+                set_status_message(game, "DRONES ONLINE");
             } else {
                 game->player.weapon = powerup->weapon;
                 game->player.weapon_timer = PLAYER_WEAPON_DURATION_FRAMES;
+                switch (powerup->weapon) {
+                case WEAPON_FRONT:
+                    set_status_message(game, "FRONT READY");
+                    break;
+                case WEAPON_SPREAD:
+                    set_status_message(game, "SPREAD READY");
+                    break;
+                case WEAPON_LASER:
+                    set_status_message(game, "LASER READY");
+                    break;
+                }
             }
             powerup->active = 0;
         }

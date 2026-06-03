@@ -188,6 +188,8 @@ static void reset_run(GameState *game)
     game->wave_spawned = 0;
     game->next_spawn_frame = 0;
     game->phase = LEVEL_PHASE_NORMAL;
+    game->status_message[0] = '\0';
+    game->status_message_timer = 0;
 }
 
 static void update_wave_spawning(GameState *game)
@@ -307,6 +309,10 @@ void game_update(GameState *game, int input_mask)
     collisions_update(game);
     game->level = rank_for_score(game->player.score);
     update_level_progression(game);
+
+    if (game->status_message_timer > 0) {
+        game->status_message_timer -= 1;
+    }
 
     if (game->player.lives <= 0) {
         game->screen = GAME_SCREEN_GAME_OVER;

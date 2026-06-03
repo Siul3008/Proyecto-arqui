@@ -435,6 +435,12 @@ void render_draw(const GameState *game)
     mvaddch(GAME_HEIGHT + 3, GAME_WIDTH + 1, '+');
     attroff(COLOR_PAIR(COLOR_PAIR_BORDER));
 
+    if (game->status_message_timer > 0) {
+        attron(COLOR_PAIR(COLOR_PAIR_PLAYER_SHOT));
+        render_centered(GAME_HEIGHT + 4, game->status_message);
+        attroff(COLOR_PAIR(COLOR_PAIR_PLAYER_SHOT));
+    }
+
     if (game->screen == GAME_SCREEN_GAME_OVER) {
         render_game_over(game);
     } else if (game->screen == GAME_SCREEN_PAUSED) {
