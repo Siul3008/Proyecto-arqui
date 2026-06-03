@@ -249,8 +249,14 @@ static void render_game_over(const GameState *game)
     attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    mvprintw(GAME_HEIGHT + 6, 0, "Final Score: %06d  Rank: %d  Bosses: %d  R: restart  Q: quit",
-             game->player.score, game->level, game->boss_count);
+    mvprintw(0, GAME_WIDTH + 5, "RUN SUMMARY");
+    mvprintw(2, GAME_WIDTH + 5, "Score : %06d", game->player.score);
+    mvprintw(3, GAME_WIDTH + 5, "Rank  : %d", game->level);
+    mvprintw(4, GAME_WIDTH + 5, "Bosses: %d", game->boss_count);
+    mvprintw(6, GAME_WIDTH + 5, "R: restart");
+    mvprintw(7, GAME_WIDTH + 5, "H: help");
+    mvprintw(8, GAME_WIDTH + 5, "Q: quit");
+    render_centered(GAME_HEIGHT + 6, "R: restart  H: help  Q: quit");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 }
 
