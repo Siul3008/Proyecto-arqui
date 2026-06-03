@@ -17,6 +17,34 @@ static int ranges_overlap(int left_a, int right_a, int left_b, int right_b)
     return left_a <= right_b && left_b <= right_a;
 }
 
+static int player_left(const Player *player)
+{
+    return player->position.x;
+}
+
+static int player_right(const Player *player)
+{
+    return player->position.x + 2;
+}
+
+static int player_top(const Player *player)
+{
+    return player->position.y;
+}
+
+static int player_bottom(const Player *player)
+{
+    return player->position.y;
+}
+
+static int projectile_hits_player(Vec2i shot_position, const Player *player)
+{
+    return shot_position.y >= player_top(player) &&
+           shot_position.y <= player_bottom(player) &&
+           shot_position.x >= player_left(player) &&
+           shot_position.x <= player_right(player);
+}
+
 static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
 {
     return shot_position.y >= enemy_top(enemy) &&
@@ -27,8 +55,8 @@ static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
 
 static int player_hits_enemy(const Player *player, const Enemy *enemy)
 {
-    return ranges_overlap(player->position.y, player->position.y, enemy_top(enemy), enemy_bottom(enemy)) &&
-           ranges_overlap(player->position.x - 1, player->position.x + 1, enemy_left(enemy), enemy_right(enemy));
+    return ranges_overlap(player_top(player), player_bottom(player), enemy_top(enemy), enemy_bottom(enemy)) &&
+           ranges_overlap(player_left(player), player_right(player), enemy_left(enemy), enemy_right(enemy));
 }
 
 static int score_for_enemy_type(EnemyType type)
@@ -138,7 +166,7 @@ void collisions_update(GameState *game)
             continue;
         }
 
-        if (positions_overlap(shot->position, game->player.position)) {
+        if (projectile_hits_player(shot->position, &game->player)) {
             shot->active = 0;
             damage_player(&game->player);
         }
