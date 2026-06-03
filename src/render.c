@@ -2,6 +2,7 @@
 
 #include <curses.h>
 #include <locale.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "config.h"
@@ -244,19 +245,21 @@ static void render_help(void)
 
 static void render_game_over(const GameState *game)
 {
+    char line[40];
+
     attron(COLOR_PAIR(COLOR_PAIR_ENEMY));
-    render_centered(GAME_HEIGHT + 5, "GAME OVER");
+    render_centered(GAME_HEIGHT / 2, "GAME OVER");
     attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    mvprintw(0, GAME_WIDTH + 5, "RUN SUMMARY");
-    mvprintw(2, GAME_WIDTH + 5, "Score : %06d", game->player.score);
-    mvprintw(3, GAME_WIDTH + 5, "Rank  : %d", game->level);
-    mvprintw(4, GAME_WIDTH + 5, "Bosses: %d", game->boss_count);
-    mvprintw(6, GAME_WIDTH + 5, "R: restart");
-    mvprintw(7, GAME_WIDTH + 5, "H: help");
-    mvprintw(8, GAME_WIDTH + 5, "Q: quit");
-    render_centered(GAME_HEIGHT + 6, "R: restart  H: help  Q: quit");
+    render_centered(GAME_HEIGHT / 2 + 2, "RUN SUMMARY");
+    snprintf(line, sizeof(line), "Score : %06d", game->player.score);
+    render_centered(GAME_HEIGHT / 2 + 4, line);
+    snprintf(line, sizeof(line), "Rank  : %d", game->level);
+    render_centered(GAME_HEIGHT / 2 + 5, line);
+    snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
+    render_centered(GAME_HEIGHT / 2 + 6, line);
+    render_centered(GAME_HEIGHT / 2 + 8, "R: restart  H: help  Q: quit");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 }
 
