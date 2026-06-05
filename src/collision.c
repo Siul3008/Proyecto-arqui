@@ -8,40 +8,111 @@
 #include <string.h>
 
 /********************************************************************
-* Función: positions_overlap
-* Entradas:  
+* Función: 
+    positions_overlap
 * Descripción: 
+    Verifica si las coordenadas de dos elementos son iguales
+* Entradas: 
+    Vectores de posición (x,y) de elementos "a" y "b"
+* Salidas: 
+    1 => Hay "overlap" entre elementos (mismas coordenadas)
+    0 => No hay "overlap" entre elementos (distintas coordenadas)
 ********************************************************************/
 static int positions_overlap(Vec2i a, Vec2i b)
-{
+{    
     return a.x == b.x && a.y == b.y;
 }
 
+/************************************************************************
+* Función: 
+    ranges_overlap
+* Descripción: 
+    Verifica si hay un "overlap" entre rangos o "hitboxes" de elementos
+* Entradas: 
+    Posiciones de cada costado (derecha e izquierda o arriba y abajo, 
+    según lo requerido en el ingreso de valores) del "hitbox" de 
+    elementos a y b
+* Salidas: 
+    1 => Hay "overlap" entre "hitboxes"
+    0 => No hay "overlap" entre "hitboxes"
+*************************************************************************/
 static int ranges_overlap(int left_a, int right_a, int left_b, int right_b)
 {
     return left_a <= right_b && left_b <= right_a;
 }
 
+/************************************************************************
+* Función: 
+    player_left
+* Descripción: 
+    Obtiene la coordenada x del lado izquierdo de la hitbox del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Coordenada x del lado izquierdo de la hitbox del jugador
+*************************************************************************/
 static int player_left(const Player *player)
 {
     return player->position.x;
 }
 
+/************************************************************************
+* Función: 
+    player_right
+* Descripción: 
+    Obtiene la coordenada x del lado derecho de la hitbox del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Coordenada x del lado derecho de la hitbox del jugador
+*************************************************************************/
 static int player_right(const Player *player)
 {
     return player->position.x + 2;
 }
 
+/************************************************************************
+* Función: 
+    player_top
+* Descripción: 
+    Obtiene la coordenada y del lado superior de la hitbox del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Coordenada y del lado superior de la hitbox del jugador
+*************************************************************************/
 static int player_top(const Player *player)
 {
     return player->position.y;
 }
 
+/************************************************************************
+* Función: 
+    player_bottom
+* Descripción: 
+    Obtiene la coordenada y del lado inferior de la hitbox del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Coordenada y del lado inferior de la hitbox del jugador
+*************************************************************************/
 static int player_bottom(const Player *player)
 {
     return player->position.y;
 }
 
+/************************************************************************
+* Función: 
+    projectile_hits_player
+* Descripción: 
+    Verifica si el proyectil ha impactado al jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+    Vector (x,y) con coordenadas de proyectil a verificar
+* Salidas: 
+    1 => El proyectil ha impactado contra el jugador
+    0 => El proyectil no ha impactado contra el jugador
+*************************************************************************/
 static int projectile_hits_player(Vec2i shot_position, const Player *player)
 {
     return shot_position.y >= player_top(player) &&
@@ -50,6 +121,18 @@ static int projectile_hits_player(Vec2i shot_position, const Player *player)
            shot_position.x <= player_right(player);
 }
 
+/************************************************************************
+* Función: 
+    projectile_hits_enemy
+* Descripción: 
+    Verifica si el proyectil ha impactado a a la nave enemiga
+* Entradas: 
+    Puntero a instancia de objeto Enemy (enemigo)
+    Vector (x,y) con coordenadas de proyectil a verificar
+* Salidas: 
+    1 => El proyectil ha impactado contra el enemigo
+    0 => El proyectil no ha impactado contra el enemigo
+*************************************************************************/
 static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
 {
     return shot_position.y >= enemy_top(enemy) &&
@@ -58,12 +141,35 @@ static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
            shot_position.x <= enemy_right(enemy);
 }
 
+/************************************************************************
+* Función: 
+    player_hits_enemy
+* Descripción: 
+    Verifica si el jugador ha impactado contra la nave enemiga
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+    Puntero a instancia de objeto Enemy (enemigo)
+* Salidas: 
+    1 => El jugador ha impactado contra el enemigo
+    0 => El jugador no ha impactado contra el enemigo
+*************************************************************************/
 static int player_hits_enemy(const Player *player, const Enemy *enemy)
 {
     return ranges_overlap(player_top(player), player_bottom(player), enemy_top(enemy), enemy_bottom(enemy)) &&
            ranges_overlap(player_left(player), player_right(player), enemy_left(enemy), enemy_right(enemy));
 }
 
+/************************************************************************
+* Función: 
+    score_for_enemy_type
+* Descripción: 
+    Busca cual es el puntaje correcto a otorgar al jugador dependiendo 
+    del tipo de enemigo que este haya eliminado
+* Entradas: 
+    Tipo de enemigo eliminado
+* Salidas: 
+    Puntaje correspondiente para cada tipo de enemigo
+*************************************************************************/
 static int score_for_enemy_type(EnemyType type)
 {
     switch (type) {
@@ -76,6 +182,19 @@ static int score_for_enemy_type(EnemyType type)
     }
 }
 
+/************************************************************************
+* Función: 
+    enemy_should_drop_powerup
+* Descripción: 
+    Verifica si el enemigo eliminado debería "soltar" un power-up que el
+    jugador puede usar si atrapa el mismo
+* Entradas: 
+    Puntero a instancia de objeto GameState (juego)
+    Puntero a instancia de objeto Enemy (enemigo)
+* Salidas: 
+    1 => El enemigo debe "soltar" un power-up
+    0 => El enemigo no debe "soltar" un power-up
+*************************************************************************/
 static int enemy_should_drop_powerup(const GameState *game, const Enemy *enemy)
 {
     if (enemy->type == ENEMY_MINI_BOSS || enemy->type == ENEMY_STAGE_BOSS) {
@@ -85,21 +204,45 @@ static int enemy_should_drop_powerup(const GameState *game, const Enemy *enemy)
     return ((game->frame + enemy->position.x + game->player.score) % POWERUP_DROP_DIVISOR) == 0;
 }
 
+/************************************************************************
+* Función: 
+   drop_powerup_from_enemy
+* Descripción: 
+    Si el enemigo debe "soltar" un power-up, crea una semilla para
+    la generación del mismo, además, dependiendo del tipo de enemigo que
+    sea, suelta un tipo diferente de power-up en comparación a un enemigo 
+    común, este usará la semilla generada anteriormente
+* Entradas: 
+    Puntero a instancia de objeto GameState (juego)
+    Puntero a instancia de objeto Enemy (enemigo)
+* Salidas: 
+    Se debe soltar power-up => Power-up correspondiente a tipo de enemigo 
+    No se debe soltar power-up => Nada
+*************************************************************************/
 static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
 {
+    //Verifica si el enemigo debe soltar un power-up
     if (!enemy_should_drop_powerup(game, enemy)) {
         return;
     }
 
+    //Genera semilla usada para la generación de power-up
+    //  Será una suma del # de frame en el que se encuentra el juego, el puntaje actual del jugador,
+    //      así como las coordenadas (x,y) del enemigo que acaba de ser eliminado
     int seed = game->frame + game->player.score + enemy->position.x + enemy->position.y;
 
+    //Verifica si el enemigo eliminado ha sido un jefe
     if (enemy->type == ENEMY_STAGE_BOSS) {
+        //Si lo es, genera tanto un dron como un arma, en este caso, esta última será un láser
         powerups_spawn_drone(game->powerups, MAX_POWERUPS, enemy->position);
         powerups_spawn_weapon(game->powerups, MAX_POWERUPS, (Vec2i){enemy->position.x, enemy->position.y + 1}, WEAPON_LASER);
         return;
     }
 
+    //Verifica si el enemigo eliminado ha sido un mini jefe
     if (enemy->type == ENEMY_MINI_BOSS) {
+        //Si lo es, verifica si la semilla es divisible entre 2, de serlo, soltará un arma tipo spread,
+        //  de lo contrario, generará un láser
         powerups_spawn_weapon(game->powerups,
                               MAX_POWERUPS,
                               enemy->position,
@@ -107,9 +250,14 @@ static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
         return;
     }
 
+    //Si no es ni jefe, ni mini jefe, es un enemigo común
+
+    //Verifica si la semilla es divisible entre 12
     if (seed % 12 == 0) {
+        //Si lo es, genera un dron
         powerups_spawn_drone(game->powerups, MAX_POWERUPS, enemy->position);
     } else {
+        //De lo contrario, soltará un arma usando la semilla como referencia
         powerups_spawn_weapon(game->powerups,
                               MAX_POWERUPS,
                               enemy->position,
@@ -117,6 +265,17 @@ static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
     }
 }
 
+/************************************************************************
+* Función: 
+    damage_player
+* Descripción: 
+    Si el jugador no se encuentra en estado de invencibilidad, se le resta
+    una vida
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Ninguna
+*************************************************************************/
 static void damage_player(Player *player)
 {
     if (player->invulnerable_timer > 0) {
@@ -127,6 +286,17 @@ static void damage_player(Player *player)
     player->invulnerable_timer = PLAYER_INVULNERABLE_FRAMES;
 }
 
+/************************************************************************
+* Función: 
+    set_status_message
+* Descripción: 
+    Actualiza el mensaje de estado del juego
+* Entradas: 
+    Puntero a instancia de objeto GameState (juego)
+    Puntero a secuencia constante de caracteres
+* Salidas: 
+    Ninguna
+*************************************************************************/
 static void set_status_message(GameState *game, const char *message)
 {
     strncpy(game->status_message, message, STATUS_MESSAGE_LENGTH - 1);
@@ -134,71 +304,107 @@ static void set_status_message(GameState *game, const char *message)
     game->status_message_timer = STATUS_MESSAGE_DURATION;
 }
 
+/************************************************************************
+* Función: 
+    collisions_update
+* Descripción: 
+    Actualiza el estado de todas las colisiones que pueden estar 
+    ocurriendo en el juego
+* Entradas: 
+    Puntero a instancia de objeto GameState (juego)
+* Salidas: 
+    Ninguna
+*************************************************************************/
 void collisions_update(GameState *game)
 {
+    //Mientras i sea menor a la cantidad máxima de disparos permitidos al jugador al mismo tiempo
     for (int i = 0; i < MAX_PLAYER_SHOTS; ++i) {
         Projectile *shot = &game->player_shots[i];
+        
+        //Toma un disparo de la lista de disparos del jugador y verifica que este se encuentre activo
 
         if (!shot->active) {
             continue;
         }
 
+        //Mientras j sea menor a la cantidad máxima de enemigos activos al mismo tiempo
         for (int j = 0; j < MAX_ENEMIES; ++j) {
             Enemy *enemy = &game->enemies[j];
+
+            //Toma un enemigo de la lista de enemigos y verifica que este se encuentre activo
 
             if (!enemy->active) {
                 continue;
             }
 
+            //Si el disparo del jugador ha impactado contra un enemigo
             if (projectile_hits_enemy(shot->position, enemy)) {
-                shot->active = 0;
-                enemy->health -= 1;
+                shot->active = 0; //Desactiva el disparo del jugador
+                enemy->health -= 1; //Registra el daño causado al enemigo
+
+                //Si la vida del enemigo es menor o igual a cero
                 if (enemy->health <= 0) {
-                    effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION);
-                    drop_powerup_from_enemy(game, enemy);
-                    enemy->active = 0;
-                    game->player.score += score_for_enemy_type(enemy->type);
+                    effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION); //Genera un efecto de explosión en la posición del enemigo
+                    drop_powerup_from_enemy(game, enemy); //De ser posible, suelta un power-up al jugador
+                    enemy->active = 0;  //Desactiva el enemigo
+                    game->player.score += score_for_enemy_type(enemy->type); /*Le otorga al jugador la cantidad de puntos correspondientes según el tipo de enemigo y
+                                                                                lo suma al puntaje final*/
                 }
                 break;
             }
         }
     }
 
+    //Mientras i sea menor a la cantidad máxima de disparos permitidos a los enemigos al mismo tiempo
     for (int i = 0; i < MAX_ENEMY_SHOTS; ++i) {
         Projectile *shot = &game->enemy_shots[i];
+
+        //Toma un disparo de la lista de disparos de los enemigos y verifica que este se encuentre activo
 
         if (!shot->active) {
             continue;
         }
 
+        //Si el disparo del enemigo ha impactado contra el jugador
         if (projectile_hits_player(shot->position, &game->player)) {
-            shot->active = 0;
-            damage_player(&game->player);
+            shot->active = 0; //Desactiva el disparo del enemigo
+            damage_player(&game->player); //De ser posible, registra el daño causado al jugador
         }
     }
 
+    //Mientras i sea menor a la cantidad máxima de enemigos permitidos al mismo tiempo
     for (int i = 0; i < MAX_ENEMIES; ++i) {
         Enemy *enemy = &game->enemies[i];
 
+        //Toma un disparo de la lista de disparos de los enemigos, verifica que este se encuentre activo y si ha impactado contra el jugador
+        
         if (enemy->active && player_hits_enemy(&game->player, enemy)) {
+            //Si la hitbox pertenece a la de un enemigo común
             if (enemy_hitbox_half_width(enemy->type) == 0) {
-                enemy->active = 0;
+                enemy->active = 0; //Marca al mismo como inactivo
             }
-            damage_player(&game->player);
+            damage_player(&game->player); //De ser posible, registra el daño causado al jugador
         }
     }
 
+    //Mientras i sea menor a la cantidad máxima de power-ups activos al mismo tiempo
     for (int i = 0; i < MAX_POWERUPS; ++i) {
         PowerUp *powerup = &game->powerups[i];
 
+        //Toma un power-up de la lista de power-ups, verifica que este se encuentre activo y si ha impactado contra el jugador
+
         if (powerup->active && positions_overlap(powerup->position, game->player.position)) {
+            //Si el power-up es un dron
             if (powerup->type == POWERUP_DRONE) {
-                game->player.drone_count = MAX_PLAYER_DRONES;
-                game->player.drone_timer = PLAYER_DRONE_DURATION_FRAMES;
-                set_status_message(game, "DRONES ONLINE");
+                game->player.drone_count = MAX_PLAYER_DRONES; //Setea la cantidad de drones del jugador en el máximo permitido 
+                game->player.drone_timer = PLAYER_DRONE_DURATION_FRAMES; //Además, reinicia el temporizador de tiempo que el jugador tendrá activos los drones
+                set_status_message(game, "DRONES ONLINE");  //Actualiza el mensaje se estatus actual del juego
             } else {
+                //De lo contrario, actualiza el tipo de arma que el jugador tendrá
                 game->player.weapon = powerup->weapon;
-                game->player.weapon_timer = PLAYER_WEAPON_DURATION_FRAMES;
+                game->player.weapon_timer = PLAYER_WEAPON_DURATION_FRAMES; //Reinicia el temporizador de tiempo que el jugador tendrá activa el arma
+
+                //Además, actualiza el mensaje se estatus actual del juego según el tipo de arma 
                 switch (powerup->weapon) {
                 case WEAPON_FRONT:
                     set_status_message(game, "FRONT READY");
@@ -211,6 +417,7 @@ void collisions_update(GameState *game)
                     break;
                 }
             }
+            //Por último, desactiva el power-up para que el jugador no lo pueda volver a atrapar
             powerup->active = 0;
         }
     }
