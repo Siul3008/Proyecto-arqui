@@ -1,18 +1,18 @@
-# Summer Carnival '92: Recca - adaptacion en modo texto
+# Summer Carnival '92: Recca - adaptación en modo texto
 
-Proyecto academico desarrollado en C como una adaptacion en terminal de un
+Proyecto academico desarrollado en C como una adaptación en terminal de un
 shooter vertical inspirado en `Summer Carnival '92: Recca`.
 
 El objetivo del proyecto es replicar la idea general del juego desde cero,
-aplicando programacion estructurada, separacion por modulos, manejo de memoria
-simple, entrada por teclado, renderizado en terminal y medicion posterior de
-partes criticas para una posible comparacion con rutinas en ensamblador AA32.
+aplicando programación estructurada, separación por módulos, manejo de memoria
+simple, entrada por teclado, renderizado en terminal y medición posterior de
+módulos criticos para una posible comparación con rutinas en ensamblador AA32.
 
-No se usa codigo ni recursos del juego original.
+No se hace uso de código ni recursos del juego original.
 
 ## Estado actual
 
-El juego ya incluye:
+El juego actualmente incluye:
 
 - Nave del jugador con movimiento en cuatro direcciones.
 - Disparo principal.
@@ -20,65 +20,66 @@ El juego ya incluye:
 - Drones temporales como apoyo de disparo.
 - Power-ups temporales para armas y drones.
 - Bomba cargada al dejar de disparar.
-- Escudo de carga capaz de absorber proyectiles pequenos.
-- Enemigos normales con varios comportamientos.
+- Escudo de carga capaz de absorber proyectiles pequeños.
+- Enemigos normales con múltiples comportamientos aleatorios.
 - Mini jefes y jefes de mayor dificultad.
 - Sistema infinito por puntaje y rango.
-- Progresion de dificultad mas gradual.
-- Vidas, puntaje y penalizacion al morir.
-- Pausa.
-- Pantalla de ayuda.
+- Progresión de dificultad de manera gradual.
+- Vidas, puntaje y penalización al morir.
+- Pantalla de pausa.
+- Menú de ayuda.
 - Pantalla de Game Over con resumen de partida.
 - Tabla local de mejores puntuaciones.
-- Ingreso de nombre al terminar la partida.
+- Ingreso de nombre del jugador al terminar la partida.
 
 ## Controles
 
-- `W` o flecha arriba: mover arriba.
-- `A` o flecha izquierda: mover izquierda.
-- `S` o flecha abajo: mover abajo.
-- `D` o flecha derecha: mover derecha.
+- `W` o flecha arriba: mover nave jugador hacia arriba.
+- `A` o flecha izquierda: mover nave jugador hacia izquierda.
+- `S` o flecha abajo: mover nave jugador hacia abajo.
+- `D` o flecha derecha: mover nave jugador hacia derecha.
 - `Espacio`: disparar.
 - Soltar `Espacio`: cargar bomba.
 - Volver a presionar `Espacio`: liberar bomba cargada.
-- `P`: pausar o continuar.
-- `H`: abrir o cerrar ayuda.
-- `R`: reiniciar desde Game Over.
+- `P`: pausar o continuar partida.
+- `H`: abrir o cerrar menú de ayuda.
+- `R`: reiniciar partida desde Game Over.
 - `Q`: salir.
 - `ENTER`: iniciar partida o guardar nombre en ranking.
 - `BACKSPACE`: borrar letra al ingresar nombre.
 
 ## Ranking
 
-Cuando el jugador pierde todas sus vidas, el juego pide un nombre de maximo
-10 caracteres. Luego guarda la puntuacion en una tabla local de mejores
-resultados.
+Cuando el jugador pierde todas sus vidas, el juego pide un nombre de máximo
+10 caracteres. Esto para guardar el puntaje del jugador en una tabla local que contiene los mejores
+resultados hasta el momento.
 
-El archivo generado se llama:
+El nombre del archivo que guarda dichos puntajes es:
 
 ```sh
 highscores.txt
 ```
 
-Este archivo se crea al ejecutar el juego y guarda:
+Este archivo se crea al ejecutar el juego por primera vez y guarda:
 
 - Nombre del jugador.
 - Puntaje.
 - Rango alcanzado.
 - Cantidad de jefes derrotados.
 
-## Herramientas
+## Herramientas utilizadas en el desarrollo
 
 - Lenguaje: C.
-- Estandar: C11.
-- Libreria de terminal: ncurses / ncursesw.
-- Compilador recomendado en Windows: GCC de MSYS2 UCRT64.
-- Sistema de compilacion: Makefile.
-- Editor recomendado: Visual Studio Code.
+- Estándar: C11.
+- Librería de terminal: ncurses / ncursesw.
+- Compilador utilizado en Windows: GCC (MSYS2 UCRT64).
+- Compilador utilizado en Linux: GCC.
+- Sistema de compilación: Makefile.
+- Editor utilizado: Visual Studio Code.
 
-## Compilacion en Windows
+## Compilación en Windows
 
-El proyecto esta preparado para compilar con MSYS2 UCRT64 y `mingw32-make`.
+El proyecto está preparado para compilar con MSYS2 UCRT64 y `mingw32-make`.
 
 Desde PowerShell, dentro de la carpeta del proyecto:
 
@@ -98,13 +99,13 @@ Para ejecutar:
 ./recca_text.exe
 ```
 
-Si se usa la terminal UCRT64 de MSYS2, tambien se puede ejecutar:
+Si se hace uso de la terminal UCRT64 de MSYS2, también es posible ejecutar:
 
 ```sh
 mingw32-make run
 ```
 
-## Compilacion en Raspberry Pi
+## Compilación en Raspberry Pi
 
 En Raspberry Pi se recomienda instalar GCC, make y ncurses:
 
@@ -170,20 +171,20 @@ src/
   render.c       Dibujo de pantalla, HUD y menus.
 ```
 
-## Diseno general
+## Diseño general
 
-La logica esta dividida en modulos pequenos para facilitar mantenimiento y
-pruebas. La idea es que cada archivo tenga una responsabilidad clara:
+La lógica se encuentra dividida en módulos pequeños para facilitar mantenimiento y
+pruebas. La idea es que cada archivo tenga una responsabilidad definida:
 
 - `game` coordina el estado general.
 - `player` maneja la nave y sus armas.
 - `enemy` maneja enemigos, jefes y patrones.
 - `projectile` mueve disparos del jugador y enemigos.
-- `collision` decide impactos y consecuencias.
+- `collision` calcula impactos y consecuencias de los mismos.
 - `powerup` controla mejoras temporales.
 - `highscore` guarda y ordena mejores puntuaciones.
-- `render` solo dibuja lo que ya existe en el estado.
-- `input` traduce teclas a acciones del juego.
+- `render` solo dibuja en pantalla lo que ya existe en el estado.
+- `input` traduce entradas del usuario a acciones del juego.
 
-Esta separacion ayuda a mantener un codigo mas limpio y tambien facilita
-escoger funciones especificas para medir rendimiento u optimizar despues.
+Esta separación es de utilidad para así mantener un codigo mas limpio y tambien agilizar
+la elección de funciones específicas para medir su rendimiento y/u optimizar las mismas en caso se ser necesario.

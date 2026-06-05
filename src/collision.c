@@ -7,6 +7,11 @@
 
 #include <string.h>
 
+/********************************************************************
+* Función: positions_overlap
+* Entradas:  
+* Descripción: 
+********************************************************************/
 static int positions_overlap(Vec2i a, Vec2i b)
 {
     return a.x == b.x && a.y == b.y;
