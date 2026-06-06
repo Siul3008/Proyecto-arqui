@@ -190,6 +190,7 @@ static void reset_run(GameState *game)
     game->level = 1;
     game->boss_count = 0;
     game->next_boss_score = BOSS_SCORE_INTERVAL;
+    game->next_extra_life_score = EXTRA_LIFE_SCORE_INTERVAL;
     game->wave_spawned = 0;
     game->next_spawn_frame = 0;
     game->phase = LEVEL_PHASE_NORMAL;
@@ -198,6 +199,25 @@ static void reset_run(GameState *game)
     game->name_input[0] = '\0';
     game->name_length = 0;
     game->score_recorded = 0;
+}
+
+static void set_status_message(GameState *game, const char *message)
+{
+    strncpy(game->status_message, message, STATUS_MESSAGE_LENGTH - 1);
+    game->status_message[STATUS_MESSAGE_LENGTH - 1] = '\0';
+    game->status_message_timer = STATUS_MESSAGE_DURATION;
+}
+
+static void update_extra_life(GameState *game)
+{
+    while (game->player.score >= game->next_extra_life_score) {
+        if (game->player.lives < PLAYER_MAX_LIVES) {
+            game->player.lives += 1;
+            set_status_message(game, "LIFE RECOVERED");
+        }
+
+        game->next_extra_life_score += EXTRA_LIFE_SCORE_INTERVAL;
+    }
 }
 
 static void begin_name_entry(GameState *game)
@@ -375,6 +395,7 @@ void game_update(GameState *game, int input_mask)
                    enemy_move_interval_for_wave(game->level));
     update_charge_shield(game);
     collisions_update(game);
+    update_extra_life(game);
     game->level = rank_for_score(game->player.score);
     update_level_progression(game);
 

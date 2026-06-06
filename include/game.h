@@ -15,6 +15,7 @@ typedef struct {
     int level;
     int boss_count;
     int next_boss_score;
+    int next_extra_life_score;
     int wave_spawned;
     int next_spawn_frame;
     LevelPhase phase;

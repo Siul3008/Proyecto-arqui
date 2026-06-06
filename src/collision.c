@@ -438,7 +438,9 @@ void collisions_update(GameState *game)
 
         //Toma un power-up de la lista de power-ups, verifica que este se encuentre activo y si ha impactado contra el jugador
 
-        if (powerup->active && positions_overlap(powerup->position, game->player.position)) {
+        if (powerup->active &&
+            (positions_overlap(powerup->position, game->player.position) ||
+             projectile_hits_player(powerup->position, &game->player))) {
             //Si el power-up es un dron
             if (powerup->type == POWERUP_DRONE) {
                 game->player.drone_count = MAX_PLAYER_DRONES; //Setea la cantidad de drones del jugador en el máximo permitido 
