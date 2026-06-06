@@ -107,6 +107,20 @@ static void move_enemy(Enemy *enemy)
         enemy->position.x += enemy->velocity.x;
         enemy->position.y += enemy->velocity.y + 1;
         break;
+    case ENEMY_SWEEP:
+        enemy->position.x += enemy->velocity.x;
+        if (enemy->age % 2 == 0) {
+            enemy->position.y += enemy->velocity.y;
+        }
+        break;
+    case ENEMY_DIVE:
+        if (enemy->age < 20) {
+            enemy->position.x += enemy->velocity.x;
+            enemy->position.y += enemy->velocity.y;
+        } else {
+            enemy->position.y += enemy->velocity.y + 1;
+        }
+        break;
     //Si el enemigo es un tipo de jefe
     case ENEMY_MINI_BOSS:
     case ENEMY_STAGE_BOSS:
@@ -195,6 +209,10 @@ static int fire_cooldown_for_type(EnemyType type, int slot)
         return 13 + (slot % 4);
     case ENEMY_FAST:
         return 18 + (slot % 6);
+    case ENEMY_SWEEP:
+        return 16 + (slot % 5);
+    case ENEMY_DIVE:
+        return 20 + (slot % 4);
     case ENEMY_MINI_BOSS:
         return 12;
     case ENEMY_STAGE_BOSS:
@@ -806,7 +824,15 @@ EnemyType enemy_type_for_wave(int wave, int spawn_index)
     }
 
     //Toma el residuo de dividir entre 4 el índice de ola generada
-    switch (spawn_index % 4) {
+    if (wave == 4) {
+        return (spawn_index % 2 == 0) ? ENEMY_SWEEP : ENEMY_ZIGZAG;
+    }
+
+    if (wave == 5) {
+        return (spawn_index % 2 == 0) ? ENEMY_DIVE : ENEMY_FAST;
+    }
+
+    switch (spawn_index % 6) {
     //Si este es igual a cero
     case 0:
         //Retorna que el enemigo a usar es tipo FAST
@@ -819,6 +845,10 @@ EnemyType enemy_type_for_wave(int wave, int spawn_index)
     case 2:
         //Retorna que el enemigo a usar es tipo DIAGONAL
         return ENEMY_DIAGONAL;
+    case 3:
+        return ENEMY_SWEEP;
+    case 4:
+        return ENEMY_DIVE;
     //Si no es ninguno de estos casos
     default:
         //Retorna que el enemigo a usar es tipo STRAIGHT

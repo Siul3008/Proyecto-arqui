@@ -50,6 +50,8 @@ typedef enum {
     ENEMY_DIAGONAL,
     ENEMY_ZIGZAG,
     ENEMY_FAST,
+    ENEMY_SWEEP,
+    ENEMY_DIVE,
     ENEMY_MINI_BOSS,
     ENEMY_STAGE_BOSS
 } EnemyType;

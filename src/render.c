@@ -49,6 +49,8 @@ static int color_for_char(char value)
     case 'd':
     case 'z':
     case 'f':
+    case 'w':
+    case 'x':
     case 'M':
     case 'B':
     case '<':
@@ -78,6 +80,10 @@ static char enemy_char_for_type(EnemyType type)
         return 'z';
     case ENEMY_FAST:
         return 'f';
+    case ENEMY_SWEEP:
+        return 'w';
+    case ENEMY_DIVE:
+        return 'x';
     case ENEMY_MINI_BOSS:
         return 'M';
     case ENEMY_STAGE_BOSS:
