@@ -54,12 +54,38 @@ static int player_center_x(const Player *player)
 static void fire_drones(Player *player, Projectile player_shots[], int shot_count)
 {
     for (int i = 0; i < player->drone_count; ++i) {
+        int direction = i == 0 ? -1 : 1;
         Vec2i drone = player_drone_position(player, i);
         Vec2i shot_position = {drone.x, drone.y - 1};
-        Vec2i shot_velocity = {0, -1};
 
-        if (shot_position.y >= 0) {
-            projectiles_spawn(player_shots, shot_count, shot_position, shot_velocity);
+        if (shot_position.y < 0) {
+            continue;
+        }
+
+        switch (player->weapon) {
+        case WEAPON_SPREAD:
+            projectiles_spawn(player_shots, shot_count, shot_position, (Vec2i){direction, -1});
+            break;
+        case WEAPON_LASER:
+            projectiles_spawn(player_shots, shot_count, shot_position, (Vec2i){0, -1});
+            projectiles_spawn(player_shots,
+                              shot_count,
+                              (Vec2i){shot_position.x, shot_position.y - 1},
+                              (Vec2i){0, -1});
+            break;
+        case WEAPON_SIDE:
+            projectiles_spawn(player_shots,
+                              shot_count,
+                              (Vec2i){drone.x, drone.y},
+                              (Vec2i){direction, 0});
+            break;
+        case WEAPON_DOUBLE:
+            projectiles_spawn(player_shots, shot_count, shot_position, (Vec2i){0, -1});
+            projectiles_spawn(player_shots, shot_count, shot_position, (Vec2i){direction, -1});
+            break;
+        case WEAPON_FRONT:
+            projectiles_spawn(player_shots, shot_count, shot_position, (Vec2i){0, -1});
+            break;
         }
     }
 }
