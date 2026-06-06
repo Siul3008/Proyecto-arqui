@@ -34,6 +34,19 @@ static void put_char(char board[GAME_HEIGHT][GAME_WIDTH], int x, int y, char val
     }
 }
 
+static void put_starfield_on_board(char board[GAME_HEIGHT][GAME_WIDTH], int frame)
+{
+    int scroll = frame / STARFIELD_SCROLL_INTERVAL;
+
+    for (int i = 0; i < STARFIELD_DOT_COUNT; ++i) {
+        int x = (i * 17 + i / 3) % GAME_WIDTH;
+        int y = (i * 7 + scroll) % GAME_HEIGHT;
+        char value = ((i + scroll) % 4 == 0) ? ':' : '.';
+
+        put_char(board, x, y, value);
+    }
+}
+
 static int color_for_char(char value)
 {
     switch (value) {
@@ -410,6 +423,8 @@ void render_draw(const GameState *game)
         render_name_entry(game);
         return;
     }
+
+    put_starfield_on_board(board, game->frame);
 
     for (int i = 0; i < MAX_PLAYER_SHOTS; ++i) {
         if (game->player_shots[i].active) {
