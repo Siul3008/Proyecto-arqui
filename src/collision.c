@@ -415,6 +415,12 @@ void collisions_update(GameState *game)
                 case WEAPON_LASER:
                     set_status_message(game, "LASER READY");
                     break;
+                case WEAPON_DOUBLE:
+                    set_status_message(game, "DOUBLE READY");
+                    break;
+                case WEAPON_SIDE:
+                    set_status_message(game, "SIDE READY");
+                    break;
                 }
             }
             //Por último, desactiva el power-up para que el jugador no lo pueda volver a atrapar

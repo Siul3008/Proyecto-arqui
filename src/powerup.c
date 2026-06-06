@@ -63,13 +63,17 @@ void powerups_update(PowerUp powerups[], int count, int frame, int move_interval
 
 WeaponType powerup_weapon_for_seed(int seed)
 {
-    switch (seed % 3) {
+    switch (seed % 5) {
     case 0:
         return WEAPON_FRONT;
     case 1:
         return WEAPON_SPREAD;
-    default:
+    case 2:
         return WEAPON_LASER;
+    case 3:
+        return WEAPON_DOUBLE;
+    default:
+        return WEAPON_SIDE;
     }
 }
 

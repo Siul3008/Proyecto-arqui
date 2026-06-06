@@ -24,7 +24,9 @@ typedef struct {
 typedef enum {
     WEAPON_FRONT,
     WEAPON_SPREAD,
-    WEAPON_LASER
+    WEAPON_LASER,
+    WEAPON_DOUBLE,
+    WEAPON_SIDE
 } WeaponType;
 
 typedef enum {

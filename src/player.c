@@ -46,6 +46,11 @@ Vec2i player_drone_position(const Player *player, int drone_index)
     return position;
 }
 
+static int player_center_x(const Player *player)
+{
+    return player->position.x + 1;
+}
+
 static void fire_drones(Player *player, Projectile player_shots[], int shot_count)
 {
     for (int i = 0; i < player->drone_count; ++i) {
@@ -61,14 +66,14 @@ static void fire_drones(Player *player, Projectile player_shots[], int shot_coun
 
 static void fire_front_weapon(Player *player, Projectile player_shots[], int shot_count)
 {
-    Vec2i shot_position = {player->position.x, player->position.y - 1};
+    Vec2i shot_position = {player_center_x(player), player->position.y - 1};
     Vec2i shot_velocity = {0, -1};
     projectiles_spawn(player_shots, shot_count, shot_position, shot_velocity);
 }
 
 static void fire_spread_weapon(Player *player, Projectile player_shots[], int shot_count)
 {
-    Vec2i center = {player->position.x, player->position.y - 1};
+    Vec2i center = {player_center_x(player), player->position.y - 1};
     projectiles_spawn(player_shots, shot_count, center, (Vec2i){0, -1});
     projectiles_spawn(player_shots, shot_count, center, (Vec2i){-1, -1});
     projectiles_spawn(player_shots, shot_count, center, (Vec2i){1, -1});
@@ -76,10 +81,29 @@ static void fire_spread_weapon(Player *player, Projectile player_shots[], int sh
 
 static void fire_laser_weapon(Player *player, Projectile player_shots[], int shot_count)
 {
-    Vec2i first = {player->position.x, player->position.y - 1};
-    Vec2i second = {player->position.x, player->position.y - 2};
+    Vec2i first = {player_center_x(player), player->position.y - 1};
+    Vec2i second = {player_center_x(player), player->position.y - 2};
     projectiles_spawn(player_shots, shot_count, first, (Vec2i){0, -1});
     projectiles_spawn(player_shots, shot_count, second, (Vec2i){0, -1});
+}
+
+static void fire_double_weapon(Player *player, Projectile player_shots[], int shot_count)
+{
+    Vec2i left = {player->position.x, player->position.y - 1};
+    Vec2i right = {player->position.x + 2, player->position.y - 1};
+    projectiles_spawn(player_shots, shot_count, left, (Vec2i){0, -1});
+    projectiles_spawn(player_shots, shot_count, right, (Vec2i){0, -1});
+}
+
+static void fire_side_weapon(Player *player, Projectile player_shots[], int shot_count)
+{
+    Vec2i center = {player_center_x(player), player->position.y - 1};
+    Vec2i left = {player->position.x, player->position.y};
+    Vec2i right = {player->position.x + 2, player->position.y};
+
+    projectiles_spawn(player_shots, shot_count, center, (Vec2i){0, -1});
+    projectiles_spawn(player_shots, shot_count, left, (Vec2i){-1, 0});
+    projectiles_spawn(player_shots, shot_count, right, (Vec2i){1, 0});
 }
 
 static void fire_current_weapon(Player *player, Projectile player_shots[], int shot_count)
@@ -93,6 +117,12 @@ static void fire_current_weapon(Player *player, Projectile player_shots[], int s
         break;
     case WEAPON_LASER:
         fire_laser_weapon(player, player_shots, shot_count);
+        break;
+    case WEAPON_DOUBLE:
+        fire_double_weapon(player, player_shots, shot_count);
+        break;
+    case WEAPON_SIDE:
+        fire_side_weapon(player, player_shots, shot_count);
         break;
     }
 }

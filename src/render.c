@@ -43,6 +43,8 @@ static int color_for_char(char value)
     case 'F':
     case 'S':
     case 'L':
+    case 'T':
+    case 'H':
     case 'D':
         return COLOR_PAIR_PLAYER_SHOT;
     case 'v':
@@ -102,6 +104,10 @@ static char weapon_char_for_type(WeaponType weapon)
         return 'S';
     case WEAPON_LASER:
         return 'L';
+    case WEAPON_DOUBLE:
+        return 'T';
+    case WEAPON_SIDE:
+        return 'H';
     }
 
     return 'F';
@@ -125,6 +131,10 @@ static const char *weapon_name_for_type(WeaponType weapon)
         return "SPREAD";
     case WEAPON_LASER:
         return "LASER";
+    case WEAPON_DOUBLE:
+        return "DOUBLE";
+    case WEAPON_SIDE:
+        return "SIDE";
     }
 
     return "FRONT";
@@ -237,7 +247,7 @@ static void render_help(void)
     render_centered(7, "Espacio: disparar");
     render_centered(8, "Soltar espacio: cargar bomba");
     render_centered(9, "Volver a presionar espacio: liberar bomba");
-    render_centered(11, "F/S/L: armas temporales");
+    render_centered(11, "F/S/L/T/H: armas temporales");
     render_centered(12, "D: drones temporales");
     render_centered(13, "P: pausa");
     render_centered(14, "R: reiniciar en Game Over");
