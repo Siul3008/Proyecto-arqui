@@ -235,18 +235,28 @@ static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
     if (enemy->type == ENEMY_STAGE_BOSS) {
         //Si lo es, genera tanto un dron como un arma, en este caso, esta última será un láser
         powerups_spawn_drone(game->powerups, MAX_POWERUPS, enemy->position);
-        powerups_spawn_weapon(game->powerups, MAX_POWERUPS, (Vec2i){enemy->position.x, enemy->position.y + 1}, WEAPON_LASER);
+        powerups_spawn_weapon(game->powerups,
+                              MAX_POWERUPS,
+                              (Vec2i){enemy->position.x, enemy->position.y + 1},
+                              seed % 2 == 0 ? WEAPON_LASER : WEAPON_SIDE);
         return;
     }
 
     //Verifica si el enemigo eliminado ha sido un mini jefe
     if (enemy->type == ENEMY_MINI_BOSS) {
+        WeaponType rewards[] = {
+            WEAPON_SPREAD,
+            WEAPON_DOUBLE,
+            WEAPON_LASER,
+            WEAPON_SIDE
+        };
+
         //Si lo es, verifica si la semilla es divisible entre 2, de serlo, soltará un arma tipo spread,
         //  de lo contrario, generará un láser
         powerups_spawn_weapon(game->powerups,
                               MAX_POWERUPS,
                               enemy->position,
-                              seed % 2 == 0 ? WEAPON_SPREAD : WEAPON_LASER);
+                              rewards[seed % 4]);
         return;
     }
 
@@ -302,6 +312,41 @@ static void set_status_message(GameState *game, const char *message)
     strncpy(game->status_message, message, STATUS_MESSAGE_LENGTH - 1);
     game->status_message[STATUS_MESSAGE_LENGTH - 1] = '\0';
     game->status_message_timer = STATUS_MESSAGE_DURATION;
+}
+
+static int weapon_duration_for_type(WeaponType weapon)
+{
+    switch (weapon) {
+    case WEAPON_LASER:
+        return PLAYER_WEAPON_SHORT_DURATION_FRAMES;
+    case WEAPON_SIDE:
+        return PLAYER_WEAPON_MEDIUM_DURATION_FRAMES;
+    case WEAPON_DOUBLE:
+    case WEAPON_SPREAD:
+        return PLAYER_WEAPON_LONG_DURATION_FRAMES;
+    case WEAPON_FRONT:
+        return PLAYER_WEAPON_DURATION_FRAMES;
+    }
+
+    return PLAYER_WEAPON_DURATION_FRAMES;
+}
+
+static const char *weapon_status_message(WeaponType weapon)
+{
+    switch (weapon) {
+    case WEAPON_FRONT:
+        return "FRONT READY";
+    case WEAPON_SPREAD:
+        return "SPREAD READY";
+    case WEAPON_LASER:
+        return "LASER READY";
+    case WEAPON_DOUBLE:
+        return "DOUBLE READY";
+    case WEAPON_SIDE:
+        return "SIDE READY";
+    }
+
+    return "WEAPON READY";
 }
 
 /************************************************************************
@@ -402,26 +447,9 @@ void collisions_update(GameState *game)
             } else {
                 //De lo contrario, actualiza el tipo de arma que el jugador tendrá
                 game->player.weapon = powerup->weapon;
-                game->player.weapon_timer = PLAYER_WEAPON_DURATION_FRAMES; //Reinicia el temporizador de tiempo que el jugador tendrá activa el arma
+                game->player.weapon_timer = weapon_duration_for_type(powerup->weapon);
+                set_status_message(game, weapon_status_message(powerup->weapon));
 
-                //Además, actualiza el mensaje se estatus actual del juego según el tipo de arma 
-                switch (powerup->weapon) {
-                case WEAPON_FRONT:
-                    set_status_message(game, "FRONT READY");
-                    break;
-                case WEAPON_SPREAD:
-                    set_status_message(game, "SPREAD READY");
-                    break;
-                case WEAPON_LASER:
-                    set_status_message(game, "LASER READY");
-                    break;
-                case WEAPON_DOUBLE:
-                    set_status_message(game, "DOUBLE READY");
-                    break;
-                case WEAPON_SIDE:
-                    set_status_message(game, "SIDE READY");
-                    break;
-                }
             }
             //Por último, desactiva el power-up para que el jugador no lo pueda volver a atrapar
             powerup->active = 0;
