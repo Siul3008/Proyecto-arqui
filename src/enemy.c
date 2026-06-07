@@ -553,6 +553,7 @@ void enemies_spawn(Enemy enemies[], int count, int x, EnemyType type)
             enemies[i].active = 1;  //Lo marca como activo
             enemies[i].position.x = x;  //Establece su coordenada x en la x indicada
             enemies[i].position.y = 0;  //Establece su coordenada y en 0
+
             /*Toma el residuo de dividir entre dos el resultado de la suma de la coordenada x indicada y el 
             índice actual:
             Si este es igual a cero -> Velocidad horizontal = 1 (Se mueve hacia la derecha)
@@ -560,6 +561,7 @@ void enemies_spawn(Enemy enemies[], int count, int x, EnemyType type)
             enemies[i].velocity.x = ((x + i) % 2 == 0) ? 1 : -1; 
             enemies[i].velocity.y = 1; //Establece su velocidad vertical en 1 (Se mueve hacia abajo)
             enemies[i].health = enemy_max_health(type); //Establece su cantidad de vidas según su tipo
+
              //Establece el tiempo entre disparos según su tipo y el índice de lista actual
             enemies[i].fire_cooldown = fire_cooldown_for_type(type, i);
             enemies[i].age = 0; //Establece su tiempo de vida en 0
@@ -588,12 +590,14 @@ void enemies_spawn_boss(Enemy enemies[], int count, EnemyType type)
         //Si el enemigo en el indice actual se encuentra inactivo
         if (!enemies[i].active) {
             enemies[i].active = 1;  //Lo marca como activo
+
             //Establece su coordenada x en el centro del área de juego
             enemies[i].position.x = GAME_WIDTH / 2; 
             enemies[i].position.y = 2;  //Establece su coordenada y en 2
             enemies[i].velocity.x = 1;  //Establece su velocidad horizontal en 1 (Se mueve hacia la derecha)
             enemies[i].velocity.y = 0;  //Establece su velocidad vertical en 0 (No sube ni baja)
             enemies[i].health = enemy_max_health(type); //Establece su cantidad de vidas según su tipo
+
             //Establece el tiempo entre disparos según su tipo y el índice de lista actual
             enemies[i].fire_cooldown = fire_cooldown_for_type(type, i);
             enemies[i].age = 0; //Establece su tiempo de vida en 0
@@ -671,6 +675,7 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
                     Número entero que indica la cantidad de proyectiles activos en el 
                     juego*/
                 fire_stage_boss_pattern(enemy, enemy_shots, shot_count);
+
             //Por otro lado, si el enemigo es un mini jefe
             } else if (enemy->type == ENEMY_MINI_BOSS) {
                 /*Llama a función que genere el patrón de disparos correpondiente para un mini jefe, pasando los siguientes parámetros
@@ -680,11 +685,13 @@ void enemies_update(Enemy enemies[], int enemy_count, Projectile enemy_shots[], 
                     Número entero que indica la cantidad de proyectiles activos en el 
                     juego*/
                 fire_mini_boss_pattern(enemy, enemy_shots, shot_count);
+
             //De lo contrario
             } else {
                 //Calcula las coordenadas iniciales del disparo basándose en las coordenadas del enemigo, asegurandose que este
                 //  proyectil sea generado justo debajo del enemigo
                 Vec2i shot_position = {enemy->position.x, enemy->position.y + 1};
+
                 //Establece un vector con las velocidades x y y correspondientemente:
                 //  velocidad x = 0 (No hay movimiento horizontal)
                 //  velocidad y = 1 (Se mueve hacia abajo)
@@ -823,15 +830,25 @@ EnemyType enemy_type_for_wave(int wave, int spawn_index)
         return (spawn_index % 3 == 0) ? ENEMY_ZIGZAG : ENEMY_DIAGONAL;
     }
 
-    //Toma el residuo de dividir entre 4 el índice de ola generada
+    //Si el número de ola es igual a cuatro (Cuarta ola)
     if (wave == 4) {
+        /*Toma el residuo de dividir entre 2 el índice de ola generada
+            Si este es igual a cero -> El enemigo a usar es tipo SWEEP
+            Si este no es igual a cero -> El enemigo a usar es tipo ZIGZAG
+        Retornará el tipo de enemigo calculado*/
         return (spawn_index % 2 == 0) ? ENEMY_SWEEP : ENEMY_ZIGZAG;
     }
 
+    //Si el número de ola es igual a cinco (Quinta ola)
     if (wave == 5) {
+        /*Toma el residuo de dividir entre 2 el índice de ola generada
+            Si este es igual a cero -> El enemigo a usar es tipo DIVE
+            Si este no es igual a cero -> El enemigo a usar es tipo FAST
+        Retornará el tipo de enemigo calculado*/
         return (spawn_index % 2 == 0) ? ENEMY_DIVE : ENEMY_FAST;
     }
 
+    //Toma el residuo de dividir entre 5 el índice de ola generada
     switch (spawn_index % 6) {
     //Si este es igual a cero
     case 0:
@@ -845,9 +862,13 @@ EnemyType enemy_type_for_wave(int wave, int spawn_index)
     case 2:
         //Retorna que el enemigo a usar es tipo DIAGONAL
         return ENEMY_DIAGONAL;
+    //Si este es igual a tres        
     case 3:
+        //Retorna que el enemigo a usar es tipo SWEEP
         return ENEMY_SWEEP;
+    //Si este es igual a cuatro
     case 4:
+        //Retorna que el enemigo a usar es tipo DIVE 
         return ENEMY_DIVE;
     //Si no es ninguno de estos casos
     default:

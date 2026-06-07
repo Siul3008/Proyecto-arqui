@@ -166,7 +166,7 @@ static int player_hits_enemy(const Player *player, const Enemy *enemy)
     Busca cual es el puntaje correcto a otorgar al jugador dependiendo 
     del tipo de enemigo que este haya eliminado
 * Entradas: 
-    Tipo de enemigo eliminado
+    Tipo de enemigo eliminado EnemyType
 * Salidas: 
     Puntaje correspondiente para cada tipo de enemigo
 *************************************************************************/
@@ -197,10 +197,19 @@ static int score_for_enemy_type(EnemyType type)
 *************************************************************************/
 static int enemy_should_drop_powerup(const GameState *game, const Enemy *enemy)
 {
+    //Si el enemigo es algún jefe
     if (enemy->type == ENEMY_MINI_BOSS || enemy->type == ENEMY_STAGE_BOSS) {
         return 1;
     }
 
+    /*Si el enemigo no es un jefe, determina si este debe soltar un power up al tomar el residuo de dividir entre el divisor
+    de powerup (definido en config.h), el resultado de sumar:
+        El número de frame actual
+        La coordenada x del enemigo
+        El puntaje hasta el momento del jugador
+
+    Si el resultado de estas operaciones es 0, retornará un 1, de lo contrario, retornará un 0
+    */
     return ((game->frame + enemy->position.x + game->player.score) % POWERUP_DROP_DIVISOR) == 0;
 }
 
@@ -309,43 +318,77 @@ static void damage_player(Player *player)
 *************************************************************************/
 static void set_status_message(GameState *game, const char *message)
 {
-    strncpy(game->status_message, message, STATUS_MESSAGE_LENGTH - 1);
-    game->status_message[STATUS_MESSAGE_LENGTH - 1] = '\0';
-    game->status_message_timer = STATUS_MESSAGE_DURATION;
+    strncpy(game->status_message, message, STATUS_MESSAGE_LENGTH - 1);  //Copia la cadena ingresada al buffer destinado para presentar el mensaje
+    game->status_message[STATUS_MESSAGE_LENGTH - 1] = '\0'; //Agrega un caracter nulo al final del buffer donde se presentará el mensaje en pantalla
+    game->status_message_timer = STATUS_MESSAGE_DURATION; //Establece la duracion (en frames) del mensaje en pantalla
 }
 
+/************************************************************************
+* Función: 
+    weapon_duration_for_type
+* Descripción: 
+    Indica cual debe ser el tiempo de vida (en frames) de un arma
+        según su tipo
+* Entradas: 
+    Tipo de arma WeaponType
+* Salidas: 
+    Tiempo de vida (en frames) del arma
+*************************************************************************/
 static int weapon_duration_for_type(WeaponType weapon)
 {
+    //Todos los valores que la función devolverá, han sido previamente definidos en config.h
+
     switch (weapon) {
+    //Si el arma es un laser
     case WEAPON_LASER:
         return PLAYER_WEAPON_SHORT_DURATION_FRAMES;
     case WEAPON_SIDE:
         return PLAYER_WEAPON_MEDIUM_DURATION_FRAMES;
+    //Si es un arma doble o esparcida
     case WEAPON_DOUBLE:
     case WEAPON_SPREAD:
         return PLAYER_WEAPON_LONG_DURATION_FRAMES;
+    //Si es un arma tipo FRONT
     case WEAPON_FRONT:
         return PLAYER_WEAPON_DURATION_FRAMES;
     }
 
+    //Si es el arlma normal
     return PLAYER_WEAPON_DURATION_FRAMES;
 }
 
+/************************************************************************
+* Función: 
+    weapon_status_message
+* Descripción: 
+    Obtiene el mensaje que debe ser desplegado dependiendo del tipo de 
+        arma
+* Entradas: 
+    Tipo de arma WeaponType
+* Salidas: 
+    Cadena con mensaje a desplegar según tipo de arma
+*************************************************************************/
 static const char *weapon_status_message(WeaponType weapon)
 {
     switch (weapon) {
+    //Si el arma es tipo FRONT
     case WEAPON_FRONT:
         return "FRONT READY";
+    //Si el arma es tipo SPREAD
     case WEAPON_SPREAD:
         return "SPREAD READY";
+    //Si el arma es tipo LASER
     case WEAPON_LASER:
         return "LASER READY";
+    //Si el arma es tipo DOUBLE
     case WEAPON_DOUBLE:
         return "DOUBLE READY";
+    //Si el arma es tipo SIDE
     case WEAPON_SIDE:
         return "SIDE READY";
     }
 
+    //Si no es ningun tipo de los anteriores, retorna el mensaje correspondiente al arma común
     return "WEAPON READY";
 }
 

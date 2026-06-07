@@ -12,68 +12,204 @@
 #include <ctype.h>
 #include <string.h>
 
+/************************************************************************
+* Función: 
+    spawn_x_for_wave
+* Descripción: 
+    Obtiene la cantidad de enemigos máxima que se pueden tener por ola en
+        pantalla, esto para asegurar que la pantalla no se sature con 
+        enemigos
+* Entradas: 
+    Puntero a instancia de objeto GameState (juego)
+* Salidas: 
+    Cantidad de enemigos a generar por ola
+*************************************************************************/
 static int spawn_x_for_wave(const GameState *game)
 {
+    //Calcula el ancho usable del área de juego para generar enemigos
     int usable_width = GAME_WIDTH - 6;
+
+    /*Calcula la santidad de enemigos al sumar:
+        Número de frame actual multiplicado por 7
+        Número de ola generada multiplicado por 11
+    Para después sumarle a 3, el residuo de dividir ese resultado entre el ancho usable calculado anteriormente
+    */
     return 3 + ((game->frame * 7 + game->wave_spawned * 11) % usable_width);
 }
 
+/************************************************************************
+* Función: 
+    enemy_move_interval_for_wave
+* Descripción: 
+    Obtiene el intervalo de frames entre cada movimiento del enemigo, este
+        irá en decremento conforme vaya avanzando el juego.
+    Además, entre menor sea este intervalo, los enemigos se moverán más 
+        y más rápido
+* Entradas: 
+    Número entero que indica número de ola actual
+* Salidas: 
+    Intervalo de movimiento (en frames) de los enemigos
+*************************************************************************/
 static int enemy_move_interval_for_wave(int wave)
 {
+    //Si la ola actual es menor o igual a la tercera
     if (wave <= 3) {
+        //Retorna el intervalo base (Definido en config.h)
         return ENEMY_BASE_MOVE_INTERVAL;
     }
+    //Si la ola es menor o igual a la octava 
     if (wave <= 8) {
+        //Retorna el intervalo base decrementado una vez, es decir, los enemigos 
+        //  podrán moverse más rápido
         return ENEMY_BASE_MOVE_INTERVAL - 1;
     }
 
+    //Si el juego se encuentra más allá de la ola 8, retornará el intervalo base decrementado dos veces
     return ENEMY_BASE_MOVE_INTERVAL - 2;
 }
 
+/************************************************************************
+* Función: 
+    enemy_spawn_interval_for_rank
+* Descripción: 
+    Obtiene el intervalo de frames entre cada generación de enemigo este
+        irá en decremento conforme vaya avanzando el juego.
+    Además, entre menor sea este intervalo, los enemigos se generarán más 
+        y más rápido
+* Entradas: 
+    Número entero que indica rango de jugador actual
+* Salidas: 
+    Intervalo de generación (en frames) de los enemigos
+*************************************************************************/
 static int enemy_spawn_interval_for_rank(int rank)
 {
+    //Calcula el speedup de generación el tomar el rango del jugador y dividirlo entre 3
     int speedup = rank / 3;
 
+    //Si este speedup es menor a 5
     if (speedup > 5) {
+        //Define el valor del speedup entre 3
         speedup = 5;
     }
 
+    //Retornará el resultado de restarle el valor de speedup obtenido al intervalo de generación base (Definido en config.h)
     return WAVE_SPAWN_INTERVAL - speedup;
 }
 
+/************************************************************************
+* Función: 
+    rank_for_score
+* Descripción: 
+    Obtiene el rango o nivel actual de juego, de acuerdo a la puntuación
+        actual del usuario
+* Entradas: 
+    Número entero que indica puntuación de jugador 
+* Salidas: 
+    Ragno o nivel actual del juego
+*************************************************************************/
 static int rank_for_score(int score)
-{
+{   
+    //Este rango iniciará en 1, por tanto, se tomará la puntuación ingresada y se dividirá entre el intervalo de puntuación 
+    //    necesaria para subir de nivel/rango, a este resultado se le sumará 1
     return 1 + (score / SCORE_RANK_INTERVAL);
 }
 
+/************************************************************************
+* Función: 
+    rank_for_score
+* Descripción: 
+    Obtiene la puntuación necesaria para poder llegar al próximo jefe
+* Entradas: 
+    Número entero que indica la cantidad de jefes dentro del juego
+* Salidas: 
+    Puntuación necesaria para poder llegar al próximo jefe
+*************************************************************************/
 static int next_boss_score_after_count(int boss_count)
 {
+    /*Suma:
+        El intervalo de puntuación entre cada aparición de jefe
+        La cantidad de jefes en el juego multiplicado por el crecimiento del intervalo anteriormente mencionado (Dato definido 
+            en config.c)
+    Retorna el resultado de esta suma*/
     return BOSS_SCORE_INTERVAL + boss_count * BOSS_SCORE_INTERVAL_GROWTH;
 }
 
+/************************************************************************
+* Función: 
+    boss_type_for_count
+* Descripción: 
+    Obtiene el tipo de jefe que sigue según la cantidad de jefes que hay 
+        en el juego
+* Entradas: 
+    Número entero que indica la cantidad de jefes dentro del juego
+* Salidas: 
+    Siguiente tipo de jefe, si se desea agregar uno nuevo
+*************************************************************************/
 static EnemyType boss_type_for_count(int boss_count)
 {
+    //Toma el residuo de dividir entre cinco el resultado de incrementar la cantidad de enemigos una vez
+    //Si este residuo es igual a cero 
     if ((boss_count + 1) % 5 == 0) {
+        //Retorna que el siguiente jefe debe ser un jefe de nivel
         return ENEMY_STAGE_BOSS;
     }
-
+    //De lo contrario, retorna que el siguiente jefe debe ser un mini jefe 
     return ENEMY_MINI_BOSS;
 }
 
+/************************************************************************
+* Función: 
+    enemy_shot_move_interval_for_wave
+* Descripción: 
+    Calcula el intervalo (en frames) entre disparos del enemigo según la
+        ola en la que se encuentre el juego
+* Entradas: 
+    Número entero que indica la ola en la que se encuentra el juego
+* Salidas: 
+    intervalo (en frames) entre disparos del enemigo
+*************************************************************************/
 static int enemy_shot_move_interval_for_wave(int wave)
-{
+{   
+    //Si la ola en la que se encuentra el juego es menor o igual a la octava
     if (wave <= 8) {
+        //Retorna el valor de intervalo base (valor definido en config.h)
         return ENEMY_SHOT_BASE_MOVE_INTERVAL;
     }
 
+    //De lo contrario, retorna 1, es decir, habrá un disparo por cada frame del juego
     return 1;
 }
 
+/************************************************************************
+* Función: 
+    abs_int
+* Descripción: 
+    Función matemática de valor absoluto
+    Retorna el valor sin signo, es decir, siempre lo retornará positivo
+* Entradas: 
+    Número entero al que se le quiere calcular su valor absoluto
+* Salidas: 
+    Valor absoluto del número ingresado
+*************************************************************************/
 static int abs_int(int value)
 {
+    /*Evalúa si el valor es menor a cero
+        Si el valor es menor a cero (Negativo) -> Retorna el negativo de este valor (Por ley de signos, - * - = +)
+        Si el valor es igual o mayor a cero (Positivo) -> Retorna ese valor sin cambio alguno*/
     return value < 0 ? -value : value;
 }
 
+/************************************************************************
+* Función: 
+    score_for_enemy_type
+* Descripción: 
+    Busca cual es el puntaje correcto a otorgar al jugador dependiendo 
+    del tipo de enemigo que este haya eliminado
+* Entradas: 
+    Tipo de enemigo eliminado EnemyType
+* Salidas: 
+    Puntaje correspondiente para cada tipo de enemigo
+*************************************************************************/
 static int score_for_enemy_type(EnemyType type)
 {
     switch (type) {
@@ -86,14 +222,49 @@ static int score_for_enemy_type(EnemyType type)
     }
 }
 
+/************************************************************************
+* Función: 
+    player_charge_position
+* Descripción: 
+    Calcula cual va a ser la coordenada desde donde debe salir el disparo
+        cargado del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Vector con coordenadas (x,y) desde donde debe salir el disparo
+*************************************************************************/
 static Vec2i player_charge_position(const Player *player)
-{
+{   //Define un nuevo vector donde:
+    //  Toma la coordenada x del jugador sin modificar
+    //  Toma la coordenada y del jugador y la decrementa una vez, esto para hacer
+    //      que el disparo cargado salga desde arriba del jugador
     Vec2i position = {player->position.x, player->position.y - 1};
+
+    //Retorna el nuevo vector
     return position;
 }
 
+/************************************************************************
+* Función: 
+    projectile_inside_radius
+* Descripción: 
+    Verifica si el proyectil se encuentra dentro del rango especificado
+* Entradas: 
+    Vector con coordenadas (x,y) del projectil a verificar
+    Vector con coordenadas (x,y) del centro del radio que se desea 
+    verificar
+    Número entero que indica el tamaño del radio a verificar, partiendo
+        desde el centro de este
+* Salidas: 
+    1 -> El proyectil se encuentra dentro del rango especificado
+    0 -> El proyectil se encuentra fuera del rango especificado
+*************************************************************************/
 static int projectile_inside_radius(Vec2i projectile, Vec2i center, int radius)
 {
+    /*Suma:
+        Valor absoluto de la resta entre la coordenada x tanto del proyectil como del centro del radio
+        Valor absoluto de la resta entre la coordenada y tanto del proyectil como del centro del radio
+    El resultado de esta suma se compara con el radio especificado y retorna si el proyectil se encuentra dentro o fuera de este*/
     return abs_int(projectile.x - center.x) + abs_int(projectile.y - center.y) <= radius;
 }
 
