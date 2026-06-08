@@ -231,7 +231,7 @@ static int fire_cooldown_for_type(EnemyType type, int slot)
 * Entradas:
     Puntero a instancia de objeto Enemy (enemigo)
     Arreglo de instancias de objeto Projectile (proyectiles)
-    Número entero que indica la cantidad de disparos a generar
+    Número entero que indica la cantidad de proyectiles activos en el juego
 * Salidas: 
     Ninguna
 *************************************************************************/
@@ -246,7 +246,7 @@ static void fire_mini_boss_pattern(const Enemy *enemy, Projectile enemy_shots[],
     if ((enemy->age / 40) % 2 == 0) {
         /*Pasa los siguientes parámetros a la función projectiles_spawn (Una vez por punto de origen):
             Arreglo de instancias de objeto Projectile (proyectiles)
-            Número entero que indica la cantidad de disparos a generar
+           Número entero que indica la cantidad de proyectiles activos en el juego
             Vector con las coordenadas donde se desea que se genere el disparo
             Vector con las velocidades "x" y "y" correspondientes 
                 (En este caso, como se quiere que los proyectiles vayan directamente hacia abajo, se establece 
@@ -258,7 +258,7 @@ static void fire_mini_boss_pattern(const Enemy *enemy, Projectile enemy_shots[],
     } else {
         /*Pasa los siguientes parámetros a la función projectiles_spawn (Una vez por punto de origen):
             Arreglo de instancias de objeto Projectile (proyectiles)
-            Número entero que indica la cantidad de disparos a generar
+           Número entero que indica la cantidad de proyectiles activos en el juego
             Vector con las coordenadas donde se desea que se genere el disparo (En este caso, se desea que todos aparezcan desde el centro)
             Vector con las velocidades "x" y "y" correspondientes 
                 (En este caso, como se quiere que los proyectiles se dispersen, se colocan los siguientes parámetros en dicho vector:
@@ -279,7 +279,7 @@ static void fire_mini_boss_pattern(const Enemy *enemy, Projectile enemy_shots[],
 * Entradas:
     Puntero a instancia de objeto Enemy (enemigo)
     Arreglo de instancias de objeto Projectile (proyectiles)
-    Número entero que indica la cantidad de disparos a generar
+    Número entero que indica la cantidad de proyectiles activos en el juego
 * Salidas: 
     Ninguna
 *************************************************************************/
@@ -301,7 +301,7 @@ static void fire_stage_boss_pattern(const Enemy *enemy, Projectile enemy_shots[]
         /*Pasa los siguientes parámetros a la función projectiles_spawn (Una vez por punto de origen, que en este 
         como se desea que hayan 5 proyectiles activos, se usan los 5 puntos de origen calculados previamente):
             Arreglo de instancias de objeto Projectile (proyectiles)
-            Número entero que indica la cantidad de disparos a generar
+           Número entero que indica la cantidad de proyectiles activos en el juego
             Vector con las coordenadas donde se desea que se genere el disparo
             Vector con las velocidades "x" y "y" correspondientes 
                 (En este caso, como se quiere que solo los proyectiles que salen desde los extremos lejanos vayan de 
@@ -319,7 +319,7 @@ static void fire_stage_boss_pattern(const Enemy *enemy, Projectile enemy_shots[]
         /*Pasa los siguientes parámetros a la función projectiles_spawn (Una vez por punto de origen, que en este 
         como se desea que hayan 3 proyectiles activos, se usan los 3 puntos de origen "cercanos" calculados previamente):
             Arreglo de instancias de objeto Projectile (proyectiles)
-            Número entero que indica la cantidad de disparos a generar
+            Número entero que indica la cantidad de proyectiles activos en el juego
             Vector con las coordenadas donde se desea que se genere el disparo
             Vector con las velocidades "x" y "y" correspondientes 
                 (En este caso, como se quiere que solo los proyectiles que salen desde los extremos cercanos vayan de 
@@ -335,7 +335,7 @@ static void fire_stage_boss_pattern(const Enemy *enemy, Projectile enemy_shots[]
         /*Pasa los siguientes parámetros a la función projectiles_spawn (Una vez por punto de origen, que en este 
         como se desea que hayan 2 proyectiles activos, se usan los 2 puntos de "lejanos" calculados previamente):
             Arreglo de instancias de objeto Projectile (proyectiles)
-            Número entero que indica la cantidad de disparos a generar
+           Número entero que indica la cantidad de proyectiles activos en el juego
             Vector con las coordenadas donde se desea que se genere el disparo
             Vector con las velocidades "x" y "y" correspondientes 
                 (En este caso, como se quiere que ambos proyectiles vayan directamente hacia abajo, se colocan los
