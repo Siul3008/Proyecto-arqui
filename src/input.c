@@ -4,13 +4,28 @@
 
 #include <ncursesw/curses.h>
 
+//Crea una variable global que indica cual ha sido el último caracter ingresado
 static int last_character = ERR;
 
+
+/************************************************************************
+* Función: 
+    input_poll
+* Descripción: 
+    Lee e interpreta cual ha sido la última tecla presionada por el 
+        jugador
+* Entradas: 
+    Ninguna
+* Salidas: 
+    Número entero que indica cual ha sido el índice del caracter ingresado
+*************************************************************************/
 int input_poll(void)
 {
+    //Inicializa variable input en INPUT_NONE 
+    //  Ya si la tecla presionada corresponde a una de las que necesita el programa, este valor cambiará correspondientemente
     int input = INPUT_NONE;
-    int character = getch();
-    last_character = character;
+    int character = getch();    //Obtiene el caracter correspondiente a la tecla presionada
+    last_character = character; //Guarda en la variable global, el caracter que acaba de ser ingresado
 
     switch (character) {
     case '\n':
@@ -66,9 +81,20 @@ int input_poll(void)
         break;
     }
 
-    return input;
+    return input;   //Retorna el caracter ingresado
 }
 
+/************************************************************************
+* Función: 
+    input_last_character
+* Descripción: 
+    Retorna el índice del último caracter ingresado
+* Entradas: 
+    Ninguna
+* Salidas: 
+    Número entero que indica cual ha sido el índice del último 
+        caracter ingresado
+*************************************************************************/
 int input_last_character(void)
 {
     return last_character;
