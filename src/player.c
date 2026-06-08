@@ -3,51 +3,109 @@
 #include "config.h"
 #include "projectile.h"
 
+/************************************************************************
+* Función: 
+    player_init
+* Descripción: 
+    Inicialización del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Ninguna
+*************************************************************************/
 void player_init(Player *player)
-{
-    player->position.x = PLAYER_START_X;
-    player->position.y = PLAYER_START_Y;
-    player->lives = PLAYER_START_LIVES;
-    player->score = 0;
-    player->shot_cooldown = 0;
-    player->invulnerable_timer = 0;
-    player->charge_frames = 0;
-    player->charge_bomb_ready = 0;
-    player->drone_count = 0;
-    player->drone_timer = 0;
-    player->weapon_timer = 0;
-    player->weapon = WEAPON_FRONT;
+{   
+    //Inicializa las variables del objeto jugador de la siguiente forma
+    player->position.x = PLAYER_START_X;    //Coordenada inicial x según definido en config.h
+    player->position.y = PLAYER_START_Y;    //Coordenada inicial y según definido en config.h
+    player->lives = PLAYER_START_LIVES; //Cantidad de vidas iniciales según definido en config.h
+    player->score = 0;  //Puntaje en 0
+    player->shot_cooldown = 0;  //Intervalo de frames hasta al siguiente disparo en 0
+    player->invulnerable_timer = 0; //Temporizador de imvencibilidad tras recibir un disparo en 0
+    player->charge_frames = 0;  //Contador de frames en los que se ha mantenido un disparo cargado en 0
+    player->charge_bomb_ready = 0;  //Indicador si la bomba cargada está lista en 0
+    player->drone_count = 0;    //Cantidad de drones disponibles en 0
+    player->drone_timer = 0;    //Temporizador de frames durante los cuales puede estar activo el dron en cero
+    player->weapon_timer = 0;   //Temporizador de frames durante los cuales puede estar activa un arma de power-up en cero
+    player->weapon = WEAPON_FRONT;  //Tipo de arma por defecto FRONT
 }
 
+/************************************************************************
+* Función: 
+    clamp_int
+* Descripción: 
+    Restringe un valor a un rango máximo y mínimo
+* Entradas: 
+    Número entero que indica valor recibido
+    Número entero que indica rango mínimo 
+    Número entero que indica rango máximo
+* Salidas: 
+    Número entero a usar dentro de ese rango
+*************************************************************************/
 static int clamp_int(int value, int min_value, int max_value)
-{
+{   
+    //Si el valor ingresado es menor al rango mínimo 
     if (value < min_value) {
-        return min_value;
+        return min_value;   //Retorna el rango mínimo
     }
 
+    //Si el valor ingresado es mayor al rango máximo
     if (value > max_value) {
-        return max_value;
+        return max_value;   //Retorna el rango máximo
     }
 
-    return value;
+    //De lo contrario, si el valor ingresado se encuentra dentro del rango 
+    return value;   //Retorna el valor ingresado
 }
 
+/************************************************************************
+* Función: 
+    player_drone_position
+* Descripción: 
+    Obtiene la posición en la que debe estar ubicado el dron del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+    Entero que indica el índice del dron a analizar
+* Salidas: 
+    Vector con coordenadas (x,y) que indican la posición del dron
+*************************************************************************/
 Vec2i player_drone_position(const Player *player, int drone_index)
 {
+    //Inicializa un entero de dirección donde, si el índice de dron es cero, este será igual a -1, de lo contrario, 1
     int direction = drone_index == 0 ? -1 : 1;
+
+    /*Inicaliza vector de posición donde:
+        Valor x -> Suma de:
+                    Coordenada x del jugador
+                    Dirección previamente calculada multiplicada por offset/desplazamiento horizontal del dron con respecto al jugador (Definido en config.h)
+        Valor y -> Suma de:
+                    Coordenada y del jugador
+                    Offset/desplazamiento vertical del dron con respecto al jugador (Definido en config.h)*/
     Vec2i position = {
         player->position.x + direction * PLAYER_DRONE_OFFSET_X,
         player->position.y + PLAYER_DRONE_OFFSET_Y
     };
 
+    //Ahora, procede a acomodar los valores dentro de los límites tanto horizontales como verticales del área de juego 
     position.x = clamp_int(position.x, 1, GAME_WIDTH - 2);
     position.y = clamp_int(position.y, 0, GAME_HEIGHT - 1);
 
-    return position;
+    return position;    //Retorna vector obtenido
 }
 
+/************************************************************************
+* Función: 
+    player_center_x
+* Descripción: 
+    Obtiene la coordenada central x real del jugador
+* Entradas: 
+    Puntero a instancia de objeto Player (jugador)
+* Salidas: 
+    Entero que representa coordenada x central de la hitbox del jugador
+*************************************************************************/
 static int player_center_x(const Player *player)
-{
+{   
+    //Retorna coordenada x guardada incrementada una vez
     return player->position.x + 1;
 }
 
