@@ -10,7 +10,7 @@
 #define MAX_ENEMIES 16 //Número máximo de enemigos en pantalla al mismo tiempo.
 #define MAX_ENEMY_SHOTS 40 //Número máximo de disparos de enemigos en pantalla al mismo tiempo.
 #define MAX_POWERUPS 6 //Número máximo de power-ups en pantalla al mismo tiempo.
-#define MAX_HIGH_SCORES 5 //Número máximo de puntuaciones altas a almacenar.
+#define MAX_HIGH_SCORES 10 //Número máximo de puntuaciones altas a almacenar.
 #define PLAYER_NAME_MAX_LENGTH 10 //Longitud máxima del nombre del jugador.
 #define HIGHSCORE_FILE_NAME "highscores.txt" //Nombre del archivo para almacenar las puntuaciones altas.
 

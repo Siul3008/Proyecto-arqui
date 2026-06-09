@@ -792,6 +792,11 @@ int enemies_active_count(const Enemy enemies[], int count)
     return active_count;
 }
 
+static EnemyType enemy_type_from_pattern(const EnemyType pattern[], int count, int spawn_index)
+{
+    return pattern[spawn_index % count];
+}
+
 /************************************************************************
 * Función: 
    enemy_type_for_wave
@@ -841,11 +846,45 @@ EnemyType enemy_type_for_wave(int wave, int spawn_index)
 
     //Si el número de ola es igual a cinco (Quinta ola)
     if (wave == 5) {
-        /*Toma el residuo de dividir entre 2 el índice de ola generada
-            Si este es igual a cero -> El enemigo a usar es tipo DIVE
-            Si este no es igual a cero -> El enemigo a usar es tipo FAST
-        Retornará el tipo de enemigo calculado*/
-        return (spawn_index % 2 == 0) ? ENEMY_DIVE : ENEMY_FAST;
+        //Mezcla enemigos manejables con un DIVE ocasional para suavizar la dificultad.
+        static const EnemyType pattern[] = {
+            ENEMY_STRAIGHT,
+            ENEMY_SWEEP,
+            ENEMY_DIAGONAL,
+            ENEMY_ZIGZAG,
+            ENEMY_DIVE,
+            ENEMY_STRAIGHT
+        };
+
+        return enemy_type_from_pattern(pattern, 6, spawn_index);
+    }
+
+    if (wave == 6) {
+        //Mantiene variedad sin llenar la pantalla de enemigos muy veloces.
+        static const EnemyType pattern[] = {
+            ENEMY_SWEEP,
+            ENEMY_ZIGZAG,
+            ENEMY_DIAGONAL,
+            ENEMY_STRAIGHT,
+            ENEMY_DIVE,
+            ENEMY_SWEEP
+        };
+
+        return enemy_type_from_pattern(pattern, 6, spawn_index);
+    }
+
+    if (wave == 7) {
+        //Reintroduce FAST de forma controlada para subir dificultad gradualmente.
+        static const EnemyType pattern[] = {
+            ENEMY_SWEEP,
+            ENEMY_ZIGZAG,
+            ENEMY_DIAGONAL,
+            ENEMY_DIVE,
+            ENEMY_STRAIGHT,
+            ENEMY_FAST
+        };
+
+        return enemy_type_from_pattern(pattern, 6, spawn_index);
     }
 
     //Toma el residuo de dividir entre 5 el índice de ola generada
