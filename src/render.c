@@ -22,7 +22,10 @@ enum {
     COLOR_PAIR_ENEMY,
     COLOR_PAIR_ENEMY_SHOT,
     COLOR_PAIR_BORDER,
-    COLOR_PAIR_TEXT
+    COLOR_PAIR_TEXT,
+    COLOR_PAIR_POWERUP,
+    COLOR_PAIR_STAR,
+    COLOR_PAIR_HIGHLIGHT
 };
 
 /************************************************************************
@@ -147,13 +150,14 @@ static int color_for_char(char value)
     case '|':
     case 'O':
     case '@':
+        return COLOR_PAIR_PLAYER_SHOT;
     case 'F':
     case 'S':
     case 'L':
     case 'T':
     case 'H':
     case 'D':
-        return COLOR_PAIR_PLAYER_SHOT;
+        return COLOR_PAIR_POWERUP;
 
     //---------- Naves enemigas ----------
     case 'v':
@@ -177,6 +181,11 @@ static int color_for_char(char value)
     //---------- Proyectil del jugador ----------
     case '*':
         return COLOR_PAIR_PLAYER_SHOT;
+
+    //---------- Fondo animado ----------
+    case '.':
+    case ':':
+        return COLOR_PAIR_STAR;
 
     //---------- Nave del jugador ----------        
     case 'A':
@@ -487,6 +496,25 @@ static void render_centered(int row, const char *text)
     mvprintw(row, col, "%s", text);
 }
 
+static void render_centered_color(int row, const char *text, int color_pair)
+{
+    attron(COLOR_PAIR(color_pair));
+    render_centered(row, text);
+    attroff(COLOR_PAIR(color_pair));
+}
+
+static void render_centered_rule(int row)
+{
+    int width = GAME_WIDTH - 12;
+    int col = 6;
+
+    attron(COLOR_PAIR(COLOR_PAIR_BORDER));
+    for (int i = 0; i < width; ++i) {
+        mvaddch(row, col + i, '-');
+    }
+    attroff(COLOR_PAIR(COLOR_PAIR_BORDER));
+}
+
 // ------------------------------------- RENDERIZADO DE PANTALLAS DEL JUEGO -------------------------------------
 
 /************************************************************************
@@ -527,6 +555,9 @@ void render_init(void)
         init_pair(COLOR_PAIR_ENEMY_SHOT, COLOR_MAGENTA, COLOR_BLACK);
         init_pair(COLOR_PAIR_BORDER, COLOR_BLUE, COLOR_BLACK);
         init_pair(COLOR_PAIR_TEXT, COLOR_WHITE, COLOR_BLACK);
+        init_pair(COLOR_PAIR_POWERUP, COLOR_GREEN, COLOR_BLACK);
+        init_pair(COLOR_PAIR_STAR, COLOR_BLUE, COLOR_BLACK);
+        init_pair(COLOR_PAIR_HIGHLIGHT, COLOR_YELLOW, COLOR_BLACK);
     }
 }
 
@@ -544,6 +575,25 @@ static void render_menu(void)
 {
     //Limpia la pantalla para no imprimir sobre otros caracteres que pueden haber quedado, es decir, para no imprimir sobre caracteres residuales
     render_clear_screen();
+
+    render_centered_rule(2);
+    render_centered_color(4, "SUMMER CARNIVAL '92: RECCA", COLOR_PAIR_PLAYER);
+    render_centered_color(5, "TEXT MODE SHOOTER", COLOR_PAIR_HIGHLIGHT);
+    render_centered_rule(7);
+
+    render_centered_color(9, "      /A\\      ", COLOR_PAIR_PLAYER);
+    render_centered_color(10, "   @   |   @   ", COLOR_PAIR_PLAYER_SHOT);
+    render_centered_color(11, " .  .  :  .  . ", COLOR_PAIR_STAR);
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    render_centered(14, "W/A/S/D or arrows: move");
+    render_centered(15, "Space: fire / release charged bomb");
+    render_centered(16, "H: help    Q: quit");
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    render_centered_color(19, "PRESS ENTER TO START", COLOR_PAIR_HIGHLIGHT);
+    refresh();
+    return;
 
     //Es importante destacar la forma en la que funcionan los atributos en ncurses, ya que, de la manera que se usa en este proyecto, para cambiar atributos como el color, se hace uso de las funciones attron y attroff
     //  attron lo que hace es, que todo código que esté después de haberse usado la función, tenga el atributo especificado en esta
@@ -585,6 +635,26 @@ static void render_help(void)
 {
     render_clear_screen();  //Limpia la pantalla para no imprimir sobre otros caracteres que pueden haber quedado, es decir, para no imprimir sobre caracteres residuales
 
+    render_centered_color(3, "HELP", COLOR_PAIR_PLAYER);
+    render_centered_rule(5);
+
+    render_centered_color(7, "MOVEMENT", COLOR_PAIR_HIGHLIGHT);
+    render_centered(8, "W/A/S/D or arrows");
+
+    render_centered_color(10, "COMBAT", COLOR_PAIR_HIGHLIGHT);
+    render_centered(11, "Space: fire");
+    render_centered(12, "Release Space: charge shield");
+    render_centered(13, "Press Space after charge: bomb");
+
+    render_centered_color(15, "ITEMS", COLOR_PAIR_HIGHLIGHT);
+    render_centered(16, "F/S/L/T/H: temporary weapons");
+    render_centered(17, "D: temporary drones");
+
+    render_centered_color(20, "P: pause   R: restart   Q: quit", COLOR_PAIR_TEXT);
+    render_centered_color(22, "H, P or ENTER: return", COLOR_PAIR_HIGHLIGHT);
+    refresh();
+    return;
+
     attron(COLOR_PAIR(COLOR_PAIR_PLAYER));  //Establece color a COLOR_PAIR_PLAYER (Cyan)
     //Renderiza cadenas de texto en el medio del área de juego
     render_centered(3, "CONTROLES");
@@ -620,6 +690,45 @@ static void render_help(void)
 static void render_game_over(const GameState *game)
 {
     char line[64]; //Inicizaliza buffer de 64 caracteres
+
+    render_centered_rule(GAME_HEIGHT / 2 - 2);
+    render_centered_color(GAME_HEIGHT / 2, "GAME OVER", COLOR_PAIR_ENEMY);
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    render_centered(GAME_HEIGHT / 2 + 2, "RUN SUMMARY");
+    snprintf(line, sizeof(line), "Score : %06d", game->player.score);
+    render_centered(GAME_HEIGHT / 2 + 4, line);
+    snprintf(line, sizeof(line), "Rank  : %d", game->level);
+    render_centered(GAME_HEIGHT / 2 + 5, line);
+    snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
+    render_centered(GAME_HEIGHT / 2 + 6, line);
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    render_centered_color(GAME_HEIGHT / 2 + 8, "HIGH SCORES", COLOR_PAIR_HIGHLIGHT);
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    for (int i = 0; i < MAX_HIGH_SCORES; ++i) {
+        const HighScoreEntry *entry = &game->high_scores[i];
+
+        if (entry->score > 0) {
+            snprintf(line,
+                     sizeof(line),
+                     "%d. %-10s %06d R:%d B:%d",
+                     i + 1,
+                     entry->name,
+                     entry->score,
+                     entry->rank,
+                     entry->bosses);
+        } else {
+            snprintf(line, sizeof(line), "%d. ---------- ------", i + 1);
+        }
+
+        render_centered(GAME_HEIGHT / 2 + 10 + i, line);
+    }
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    render_centered_color(GAME_HEIGHT / 2 + 16, "R: restart  H: help  Q: quit", COLOR_PAIR_HIGHLIGHT);
+    return;
 
     attron(COLOR_PAIR(COLOR_PAIR_ENEMY));   //Establece color a COLOR_PAIR_ENEMY (Rojo)
     //Renderiza texto de GAME OVER en medio del área de juego
@@ -700,6 +809,33 @@ static void render_name_entry(const GameState *game)
 
     render_clear_screen();  //Limpia la pantalla para no imprimir sobre otros caracteres que pueden haber quedado, es decir, para no imprimir sobre caracteres residuales
 
+    render_centered_rule(3);
+    render_centered_color(5, "NEW HIGH SCORE", COLOR_PAIR_PLAYER);
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    snprintf(line, sizeof(line), "Score : %06d", game->player.score);
+    render_centered(8, line);
+    snprintf(line, sizeof(line), "Rank  : %d", game->level);
+    render_centered(9, line);
+    snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
+    render_centered(10, line);
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    snprintf(line,
+             sizeof(line),
+             "Name  : %-10s%s",
+             game->name_input,
+             game->name_length < PLAYER_NAME_MAX_LENGTH ? "_" : "");
+    render_centered_color(13, line, COLOR_PAIR_HIGHLIGHT);
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    render_centered(16, "Letters and numbers only, max 10");
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+    render_centered_color(18, "ENTER: save  BACKSPACE: delete", COLOR_PAIR_TEXT);
+
+    refresh();
+    return;
+
     attron(COLOR_PAIR(COLOR_PAIR_PLAYER));  //Establece color a COLOR_PAIR_PLAYER (Cyan)
     //Renderiza texto "NEW HIGH SCORE" en medio de la parte superior del área de juego
     render_centered(4, "NEW HIGH SCORE");
@@ -754,6 +890,11 @@ static void render_name_entry(const GameState *game)
 *************************************************************************/
 static void render_pause_overlay(void)
 {
+    render_centered_rule(GAME_HEIGHT / 2);
+    render_centered_color(GAME_HEIGHT / 2 + 2, "PAUSED", COLOR_PAIR_HIGHLIGHT);
+    render_centered_color(GAME_HEIGHT / 2 + 4, "P: resume  Q: quit", COLOR_PAIR_TEXT);
+    return;
+
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco) 
     //Renderiza en pantalla el mensaje de pausa
     render_centered(GAME_HEIGHT / 2 + 2, "PAUSED"); 
@@ -933,9 +1074,10 @@ void render_draw(const GameState *game)
     /*Imprime en pantalla los datos del estado del juego en el siguiente formato:
         Score: (PUntaje total hasta el momento) Lives: (Vidas restantes del jugador) Rank: (Rango/nivel actual) W: (Nombre de arma actual)(Segundos restantes de arma, en caso de que esta sea especial)
             D: (Cantidad de drones del jugador)(Segundos restantes de drones, en caso de tener) Charge: (Porcentaje de carga de la bomba del jugador) Next: (Puntaje necesario para llegar al siguiente jefe)*/
-    mvprintw(1, 0, "Score:%06d Lives:%d Rank:%d W:%s %02ds D:%d %02ds Charge:%3d%% %s Next:%d",
+    mvprintw(1, 0, "SC:%06d  L:%d/%d  R:%d  W:%s %02ds  D:%d %02ds  CHG:%3d%%  %s  NEXT:%d",
              game->player.score,
              game->player.lives,
+             PLAYER_MAX_LIVES,
              game->level,
              weapon_name_for_type(game->player.weapon),
              timer_seconds(game->player.weapon_timer),

@@ -3,13 +3,13 @@
 
 #define GAME_WIDTH 60 //Ancho del área jugable en caracteres.
 #define GAME_HEIGHT 24 //Altura del área jugable en caracteres.
-#define STARFIELD_DOT_COUNT 28 //Número de puntos en el campo de estrellas. Se recomienda un número par para evitar parpadeos.
+#define STARFIELD_DOT_COUNT 28 //Número de puntos en el campo de estrellas.
 #define STARFIELD_SCROLL_INTERVAL 2 //Intervalo en frames para desplazar el campo de estrellas. Un valor más bajo hará que las estrellas se muevan más rápido.
 
-#define MAX_PLAYER_SHOTS 48 //Número máximo de disparos del jugador en pantalla al mismo tiempo. Se recomienda un número par para evitar parpadeos.
-#define MAX_ENEMIES 16 //Número máximo de enemigos en pantalla al mismo tiempo. Se recomienda un número par para evitar parpadeos.
-#define MAX_ENEMY_SHOTS 40 //Número máximo de disparos de enemigos en pantalla al mismo tiempo. Se recomienda un número par para evitar parpadeos.
-#define MAX_POWERUPS 6 //Número máximo de power-ups en pantalla al mismo tiempo. Se recomienda un número par para evitar parpadeos.
+#define MAX_PLAYER_SHOTS 48 //Número máximo de disparos del jugador en pantalla al mismo tiempo. 
+#define MAX_ENEMIES 16 //Número máximo de enemigos en pantalla al mismo tiempo.
+#define MAX_ENEMY_SHOTS 40 //Número máximo de disparos de enemigos en pantalla al mismo tiempo.
+#define MAX_POWERUPS 6 //Número máximo de power-ups en pantalla al mismo tiempo.
 #define MAX_HIGH_SCORES 5 //Número máximo de puntuaciones altas a almacenar.
 #define PLAYER_NAME_MAX_LENGTH 10 //Longitud máxima del nombre del jugador.
 #define HIGHSCORE_FILE_NAME "highscores.txt" //Nombre del archivo para almacenar las puntuaciones altas.
@@ -62,6 +62,6 @@
 #define ENEMY_BASE_MOVE_INTERVAL 4 //Intervalo en frames para mover los enemigos. Un valor más bajo hará que los enemigos se muevan más rápido.
 #define ENEMY_SHOT_BASE_MOVE_INTERVAL 2 //Intervalo en frames para mover los disparos de los enemigos. Un valor más bajo hará que los disparos de los enemigos se muevan más rápido. 
 
-#define FRAME_DELAY_MS 40 //Número de milisegundos a esperar entre cada frame del juego. Un valor más bajo hará que el juego se ejecute más rápido, pero puede causar problemas de rendimiento en sistemas más lentos.
+#define FRAME_DELAY_MS 35 //Número de milisegundos a esperar entre cada frame del juego. Un valor más bajo hará que el juego se ejecute más rápido, pero puede causar problemas de rendimiento en sistemas más lentos.
 
 #endif
