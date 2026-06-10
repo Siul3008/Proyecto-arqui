@@ -188,3 +188,86 @@ pruebas. La idea es que cada archivo tenga una responsabilidad definida:
 
 Esta separación es de utilidad para así mantener un codigo mas limpio y tambien agilizar
 la elección de funciones específicas para medir su rendimiento y/u optimizar las mismas en caso se ser necesario.
+
+## Instalación de dependencias
+
+### Windows usando MSYS2 UCRT64
+
+Abrir la terminal "MSYS2 UCRT64" y ejecutar:
+
+pacman -Syu
+
+Si MSYS2 pide cerrar la terminal, cerrarla, abrir nuevamente "MSYS2 UCRT64" y ejecutar:
+
+pacman -Su
+
+Luego instalar las dependencias del proyecto:
+
+pacman -S --needed base-devel git
+pacman -S --needed mingw-w64-ucrt-x86_64-toolchain
+pacman -S --needed mingw-w64-ucrt-x86_64-make
+pacman -S --needed mingw-w64-ucrt-x86_64-ncurses
+pacman -S --needed mingw-w64-ucrt-x86_64-SDL2
+pacman -S --needed mingw-w64-ucrt-x86_64-SDL2_mixer
+pacman -S --needed mingw-w64-ucrt-x86_64-mpg123
+pacman -S --needed mingw-w64-ucrt-x86_64-pkgconf
+
+Verificar instalación:
+
+gcc --version
+g++ --version
+mingw32-make --version
+
+Compilar y ejecutar:
+
+cd /f/U/Arqui/ProyectoFinal/SummerCarnival92Recca
+mingw32-make
+./recca_text.exe
+
+
+### Linux / Ubuntu / Debian
+
+Actualizar repositorios:
+
+sudo apt update
+
+Instalar dependencias:
+
+sudo apt install -y build-essential git make gcc g++
+sudo apt install -y libncurses-dev libsdl2-dev libsdl2-mixer-dev
+sudo apt install -y mpg123 pkg-config
+
+Compilar y ejecutar:
+
+make
+./recca_text
+
+
+### Raspberry Pi 4
+
+En Raspberry Pi OS, actualizar repositorios:
+
+sudo apt update
+
+Instalar dependencias:
+
+sudo apt install -y build-essential git make gcc g++
+sudo apt install -y libncurses-dev libsdl2-dev libsdl2-mixer-dev
+sudo apt install -y mpg123 pkg-config
+
+Compilar y ejecutar:
+
+make
+./recca_text
+
+
+### Nota sobre audio
+
+El juego usa SDL2_mixer para reproducir archivos .wav.
+
+Actualmente los audios se encuentran en:
+
+assets/music/
+assets/sfx/
+
+El paquete mpg123 se incluye por compatibilidad futura en caso de usar archivos .mp3.
