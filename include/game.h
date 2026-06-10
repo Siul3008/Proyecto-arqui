@@ -28,6 +28,8 @@ typedef struct {
     char name_input[PLAYER_NAME_MAX_LENGTH + 1];
     int name_length;
     int score_recorded;
+    int konami_step;
+    int konami_unlocked;
 } GameState;
 
 void game_init(GameState *game);

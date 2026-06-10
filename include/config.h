@@ -10,8 +10,8 @@
 #define MAX_ENEMIES 16 //Número máximo de enemigos en pantalla al mismo tiempo.
 #define MAX_ENEMY_SHOTS 40 //Número máximo de disparos de enemigos en pantalla al mismo tiempo.
 #define MAX_POWERUPS 6 //Número máximo de power-ups en pantalla al mismo tiempo.
-#define MAX_HIGH_SCORES 10 //Número máximo de puntuaciones altas a almacenar.
-#define PLAYER_NAME_MAX_LENGTH 10 //Longitud máxima del nombre del jugador.
+#define MAX_HIGH_SCORES 5 //Número máximo de puntuaciones altas a almacenar.
+#define PLAYER_NAME_MAX_LENGTH 10//Longitud máxima del nombre del jugador.
 #define HIGHSCORE_FILE_NAME "highscores.txt" //Nombre del archivo para almacenar las puntuaciones altas.
 
 #define MAX_EFFECTS 16 //Número máximo de efectos en pantalla al mismo tiempo.
@@ -35,6 +35,9 @@
 #define PLAYER_MAX_LIVES 3 //Número máximo de vidas del jugador.
 #define PLAYER_START_LIVES PLAYER_MAX_LIVES //Número de vidas del jugador al comenzar.
 #define EXTRA_LIFE_SCORE_INTERVAL 1000 //Intervalo de puntuación para obtener una vida extra.
+#define KONAMI_CHEAT_LIVES 10 //Cantidad de vidas otorgadas al activar el codigo Konami.
+#define KONAMI_DRONE_DURATION_FRAMES 999999 //Duración en frames de los drones otorgados al activar el código Konami.
+#define POWERUP_TIMER_MAX_FRAMES 999999 //Duración en frames de los power-ups.
 #define PLAYER_START_X (GAME_WIDTH / 2) //Posición inicial del jugador en el eje X.
 #define PLAYER_START_Y (GAME_HEIGHT - 2) //Posición inicial del jugador en el eje Y.
 #define PLAYER_INVULNERABLE_FRAMES 45 //Número de frames de invulnerabilidad después de recibir un daño.
@@ -54,7 +57,7 @@
 #define CHARGE_BOMB_DAMAGE 3 //Daño de la bomba de carga.
 
 #define POWERUP_DROP_DIVISOR 4 //Divisor para calcular la probabilidad de que un enemigo suelte un power-up al ser derrotado. Un valor más bajo hará que los power-ups sean más comunes.
-#define POWERUP_MOVE_INTERVAL 3 //Intervalo en frames para mover los power-ups. Un valor más bajo hará que los power-ups se muevan más rápido.
+#define POWERUP_MOVE_INTERVAL 5 //Intervalo en frames para mover los power-ups. Un valor más bajo hará que los power-ups se muevan más rápido.
 
 #define PLAYER_SHOT_COOLDOWN 2 //Número de frames entre cada disparo del jugador. Un valor más bajo hará que el jugador pueda disparar más rápido.
 #define PLAYER_SHOT_MOVE_INTERVAL 1 //Intervalo en frames para mover los disparos del jugador. Un valor más bajo hará que los disparos se muevan más rápido.

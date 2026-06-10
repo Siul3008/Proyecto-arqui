@@ -11,6 +11,35 @@
 
 #include <ctype.h>
 #include <string.h>
+// Definición de pasos para el código Konami
+enum {
+    KONAMI_UP,
+    KONAMI_DOWN,
+    KONAMI_LEFT,
+    KONAMI_RIGHT,
+    KONAMI_B,
+    KONAMI_A
+};
+// Secuencia de pasos para el código Konami
+static int input_matches_konami_step(int expected_step, int input_mask, int character)
+{
+    switch (expected_step) {
+    case KONAMI_UP:
+        return (input_mask & INPUT_UP) != 0;
+    case KONAMI_DOWN:
+        return (input_mask & INPUT_DOWN) != 0;
+    case KONAMI_LEFT:
+        return (input_mask & INPUT_LEFT) != 0;
+    case KONAMI_RIGHT:
+        return (input_mask & INPUT_RIGHT) != 0;
+    case KONAMI_B:
+        return character == 'b' || character == 'B';
+    case KONAMI_A:
+        return character == 'a' || character == 'A';
+    }
+
+    return 0;
+}
 
 /************************************************************************
 * Función: 
@@ -490,6 +519,13 @@ static void reset_run(GameState *game)
     game->name_input[0] = '\0';     //Manda un caracter nulo al buffer donde el jugador ingresa su nombre al finalizar la partida
     game->name_length = 0;  //Establece en cero el contador de caracteres dwl nombre ingresado
     game->score_recorded = 0;   //Establece en cero el puntaje obtenido al finalizar la partida       
+    game->konami_step = 0;
+
+    if (game->konami_unlocked) {
+        game->player.lives = KONAMI_CHEAT_LIVES;
+        game->player.drone_count = MAX_PLAYER_DRONES;
+        game->player.drone_timer = KONAMI_DRONE_DURATION_FRAMES;
+    }
 }
 
 /************************************************************************
@@ -508,6 +544,70 @@ static void set_status_message(GameState *game, const char *message)
     strncpy(game->status_message, message, STATUS_MESSAGE_LENGTH - 1);  //Manda la cadena de caracteres al buffer destinado para que sea presentado en pantalla
     game->status_message[STATUS_MESSAGE_LENGTH - 1] = '\0'; //Manda un caracter nulo al último caracter del buffer
     game->status_message_timer = STATUS_MESSAGE_DURATION;   //Establece el tiempo que debe durar este mensaje en pantalla según el valor definido en config.h
+}
+
+
+/************************************************************************
+* Función: 
+    activate_konami_cheat
+* Descripción:
+    Activa el código Konami, otorgando al jugador una cantidad de vidas y drones, además de actualizar el mensaje de estado del juego para indicar que el código ha sido activado
+* Entradas:
+    Puntero a instancia de objeto Game (juego)
+* Salidas:
+    Ninguna
+*************************************************************************/
+static void activate_konami_cheat(GameState *game)
+{
+    game->konami_unlocked = 1;
+    game->konami_step = 0;
+    game->player.lives = KONAMI_CHEAT_LIVES;
+    game->player.drone_count = MAX_PLAYER_DRONES;
+    game->player.drone_timer = KONAMI_DRONE_DURATION_FRAMES;
+    set_status_message(game, "KONAMI MODE");
+}
+
+/************************************************************************
+* Función: 
+    update_konami_code 
+* Descripción:
+    Verifica si el jugador ha ingresado correctamente la secuencia del código Konami, y en caso de que así sea, activa el código Konami
+* Entradas:
+    Puntero a instancia de objeto Game (juego)
+    Máscara de entrada actual del jugador
+* Salidas:
+    Ninguna
+*************************************************************************/
+static void update_konami_code(GameState *game, int input_mask)
+{
+    static const int sequence[] = {
+        KONAMI_UP,
+        KONAMI_UP,
+        KONAMI_DOWN,
+        KONAMI_DOWN,
+        KONAMI_LEFT,
+        KONAMI_RIGHT,
+        KONAMI_LEFT,
+        KONAMI_RIGHT,
+        KONAMI_B,
+        KONAMI_A
+    };
+    int character = input_last_character();
+    int sequence_length = (int)(sizeof(sequence) / sizeof(sequence[0]));
+
+    if (character < 0) {
+        return;
+    }
+
+    if (input_matches_konami_step(sequence[game->konami_step], input_mask, character)) {
+        game->konami_step += 1;
+        if (game->konami_step >= sequence_length) {
+            activate_konami_cheat(game);
+        }
+        return;
+    }
+
+    game->konami_step = input_matches_konami_step(sequence[0], input_mask, character) ? 1 : 0;
 }
 
 /************************************************************************
@@ -712,6 +812,8 @@ static void update_level_progression(GameState *game)
 *************************************************************************/
 void game_init(GameState *game)
 {
+    game->konami_step = 0;
+    game->konami_unlocked = 0;
     reset_run(game);  //Reestablece todos los valores necesarios para el juego 
     highscores_load(game->high_scores, MAX_HIGH_SCORES, HIGHSCORE_FILE_NAME);   //Carga la tabla de puntajes
     game->running = 1;  //Actualiza el estado de que el juego está corriendo, es decir, lo "activa"
@@ -736,6 +838,8 @@ void game_update(GameState *game, int input_mask)
         update_name_entry(game, input_mask);    //Actualiza el estado del ingreso de nombre
         return; //Sale de la función
     }
+
+    update_konami_code(game, input_mask);
 
     //Si se ha presionado una tecla y esta ha sido QUIT (Q)
     if (input_mask & INPUT_QUIT) {
@@ -774,6 +878,7 @@ void game_update(GameState *game, int input_mask)
     if (game->screen == GAME_SCREEN_GAME_OVER) {
         //Si se ha presionado una tecla y esta ha sido RESTART (R)
         if (input_mask & INPUT_RESTART) {
+            game->konami_unlocked = 0;   //Desactiva el código Konami, en caso de que este haya sido activado
             reset_run(game);    //Reestablece el estado del juego
             game->screen = GAME_SCREEN_PLAYING; //Establece la pantalla del juego en la que indica que la partida está en curso
         }

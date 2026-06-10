@@ -323,6 +323,15 @@ static void set_status_message(GameState *game, const char *message)
     game->status_message_timer = STATUS_MESSAGE_DURATION; //Establece la duracion (en frames) del mensaje en pantalla
 }
 
+static int capped_timer_add(int current_timer, int added_timer)
+{
+    if (current_timer >= POWERUP_TIMER_MAX_FRAMES - added_timer) {
+        return POWERUP_TIMER_MAX_FRAMES;
+    }
+
+    return current_timer + added_timer;
+}
+
 /************************************************************************
 * Función: 
     weapon_duration_for_type
@@ -486,14 +495,25 @@ void collisions_update(GameState *game)
              projectile_hits_player(powerup->position, &game->player))) {
             //Si el power-up es un dron
             if (powerup->type == POWERUP_DRONE) {
+                int previous_drone_timer = game->player.drone_timer;
                 game->player.drone_count = MAX_PLAYER_DRONES; //Setea la cantidad de drones del jugador en el máximo permitido 
                 game->player.drone_timer = PLAYER_DRONE_DURATION_FRAMES; //Además, reinicia el temporizador de tiempo que el jugador tendrá activos los drones
                 set_status_message(game, "DRONES ONLINE");  //Actualiza el mensaje se estatus actual del juego
+                if (previous_drone_timer > 0) {
+                    game->player.drone_timer = capped_timer_add(previous_drone_timer, PLAYER_DRONE_DURATION_FRAMES);
+                    set_status_message(game, "DRONES EXTENDED");
+                }
             } else {
                 //De lo contrario, actualiza el tipo de arma que el jugador tendrá
+                WeaponType previous_weapon = game->player.weapon;
+                int previous_weapon_timer = game->player.weapon_timer;
                 game->player.weapon = powerup->weapon;
                 game->player.weapon_timer = weapon_duration_for_type(powerup->weapon);
                 set_status_message(game, weapon_status_message(powerup->weapon));
+                if (previous_weapon == powerup->weapon && previous_weapon_timer > 0) {
+                    game->player.weapon_timer = capped_timer_add(previous_weapon_timer, weapon_duration_for_type(powerup->weapon));
+                    set_status_message(game, "WEAPON EXTENDED");
+                }
 
             }
             //Por último, desactiva el power-up para que el jugador no lo pueda volver a atrapar
