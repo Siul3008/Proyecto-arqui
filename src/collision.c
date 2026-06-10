@@ -322,11 +322,22 @@ static void set_status_message(GameState *game, const char *message)
     game->status_message[STATUS_MESSAGE_LENGTH - 1] = '\0'; //Agrega un caracter nulo al final del buffer donde se presentará el mensaje en pantalla
     game->status_message_timer = STATUS_MESSAGE_DURATION; //Establece la duracion (en frames) del mensaje en pantalla
 }
-
+/************************************************************************
+ * Función: 
+    capped_timer_add    
+* Descripción:
+    Suma un valor a un temporizador, pero si el resultado excede un valor máximo definido en config.h
+    se establece el temporizador en dicho valor máximo
+ * Entradas:
+    Temporizador actual (en frames)
+    Valor a sumar al temporizador (en frames)
+* Salidas:
+    Valor actualizado del temporizador (en frames)
+*************************************************************************/
 static int capped_timer_add(int current_timer, int added_timer)
 {
     if (current_timer >= POWERUP_TIMER_MAX_FRAMES - added_timer) {
-        return POWERUP_TIMER_MAX_FRAMES;
+        return POWERUP_TIMER_MAX_FRAMES;                       
     }
 
     return current_timer + added_timer;
