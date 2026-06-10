@@ -4,6 +4,7 @@
 #include "effect.h"
 #include "enemy.h"
 #include "powerup.h"
+#include "sound.h"
 
 #include <string.h>
 
@@ -295,14 +296,15 @@ static void drop_powerup_from_enemy(GameState *game, const Enemy *enemy)
 * Salidas: 
     Ninguna
 *************************************************************************/
-static void damage_player(Player *player)
+static int damage_player(Player *player)
 {
     if (player->invulnerable_timer > 0) {
-        return;
+        return 0;
     }
 
     player->lives -= 1;
     player->invulnerable_timer = PLAYER_INVULNERABLE_FRAMES;
+    return 1;
 }
 
 /************************************************************************
@@ -457,6 +459,11 @@ void collisions_update(GameState *game)
                 if (enemy->health <= 0) {
                     effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION); //Genera un efecto de explosión en la posición del enemigo
                     drop_powerup_from_enemy(game, enemy); //De ser posible, suelta un power-up al jugador
+                    if (enemy->type == ENEMY_MINI_BOSS || enemy->type == ENEMY_STAGE_BOSS) {
+                        sound_boss_defeated();
+                    } else {
+                        sound_enemy_destroyed();
+                    }
                     enemy->active = 0;  //Desactiva el enemigo
                     game->player.score += score_for_enemy_type(enemy->type); /*Le otorga al jugador la cantidad de puntos correspondientes según el tipo de enemigo y
                                                                                 lo suma al puntaje final*/
@@ -479,7 +486,9 @@ void collisions_update(GameState *game)
         //Si el disparo del enemigo ha impactado contra el jugador
         if (projectile_hits_player(shot->position, &game->player)) {
             shot->active = 0; //Desactiva el disparo del enemigo
-            damage_player(&game->player); //De ser posible, registra el daño causado al jugador
+            if (damage_player(&game->player)) {
+                sound_damage();
+            }
         }
     }
 
@@ -494,7 +503,9 @@ void collisions_update(GameState *game)
             if (enemy_hitbox_half_width(enemy->type) == 0) {
                 enemy->active = 0; //Marca al mismo como inactivo
             }
-            damage_player(&game->player); //De ser posible, registra el daño causado al jugador
+            if (damage_player(&game->player)) {
+                sound_damage();
+            }
         }
     }
 
@@ -532,6 +543,7 @@ void collisions_update(GameState *game)
             }
             //Por último, desactiva el power-up para que el jugador no lo pueda volver a atrapar
             powerup->active = 0;
+            sound_powerup();
         }
     }
 }

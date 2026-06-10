@@ -67,4 +67,7 @@
 
 #define FRAME_DELAY_MS 35 //Número de milisegundos a esperar entre cada frame del juego. Un valor más bajo hará que el juego se ejecute más rápido, pero puede causar problemas de rendimiento en sistemas más lentos.
 
+#define SOUND_ENABLED 1
+#define USE_SDL_AUDIO 1
+
 #endif

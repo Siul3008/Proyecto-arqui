@@ -8,6 +8,7 @@
 #include "highscore.h"
 #include "input.h"
 #include "powerup.h"
+#include "sound.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -449,6 +450,7 @@ static void apply_charge_bomb(GameState *game)
     Vec2i center = player_charge_position(&game->player);
     //Genera un efecto visual en esas coordenadas
     spawn_charge_effects(game, center);
+    sound_charge_bomb();
 
     //Mientras i sea menor al número máximo de disparos enemigos permitidos
     for (int i = 0; i < MAX_ENEMY_SHOTS; ++i) {
@@ -481,6 +483,11 @@ static void apply_charge_bomb(GameState *game)
         if (enemy->health <= 0) {
             //Genera un efecto de explosión, para indicar que este ha sido derrotado
             effect_spawn(game->effects, MAX_EFFECTS, enemy->position, EXPLOSION_DURATION);
+            if (enemy->type == ENEMY_MINI_BOSS || enemy->type == ENEMY_STAGE_BOSS) {
+                sound_boss_defeated();
+            } else {
+                sound_enemy_destroyed();
+            }
             enemy->active = 0;  //Marca el enemigo como inactivo
             //Le suma al jugador el puntaje correspondiente al tipo de enemigo que este era
             game->player.score += score_for_enemy_type(enemy->type);  
@@ -567,6 +574,7 @@ static void activate_konami_cheat(GameState *game)
     game->player.drone_count = MAX_PLAYER_DRONES;
     game->player.drone_timer = KONAMI_DRONE_DURATION_FRAMES;
     set_status_message(game, "KONAMI MODE");
+    sound_konami();
 }
 
 /************************************************************************
@@ -630,6 +638,7 @@ static void update_extra_life(GameState *game)
         if (game->player.lives < PLAYER_MAX_LIVES) {
             game->player.lives += 1;    //Se le suma una vida al jugador
             set_status_message(game, "LIFE RECOVERED"); //Actualiza el estatus del juego para indicar que se le ha otrogado una vida extra
+            sound_extra_life();
         }
 
         //Se procede a sumarle el intervalo entre vidas extras (definido en config.h), al indicador de siguiente puntaje necesario para recibir una vida extra
@@ -654,6 +663,7 @@ static void begin_name_entry(GameState *game)
 {
     game->name_input[0] = '\0'; //Manda un caracter nulo al final del buffer destinado para la entrada del nombre
     game->name_length = 0;  //Establece la longitud del nombre ingresado en 0
+    sound_game_over();
     game->screen = GAME_SCREEN_NAME_ENTRY;  //Le indica al juego que debe pasar a la pantalla pertinente
 }
 

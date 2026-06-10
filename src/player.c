@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "projectile.h"
+#include "sound.h"
 
 /************************************************************************
 * Función: 
@@ -555,6 +556,7 @@ void player_update(Player *player, int input_mask, Projectile player_shots[], in
 
     //Si el intervalo de frames hasta el siguiente disparo es igual a cero
     if (player->shot_cooldown == 0) {
+        sound_shot();
         fire_current_weapon(player, player_shots, shot_count);  //Hace que se dispare el arma actual del jugador
         fire_drones(player, player_shots, shot_count);  //Hace que los drones con los que cuenta el jugador disparen junto a este
         player->shot_cooldown = PLAYER_SHOT_COOLDOWN;   //Además, establece el intervalo de frames hasta el siguiente disparo, en el valor definido en config.h

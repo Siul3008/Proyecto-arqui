@@ -10,6 +10,7 @@
 #include "game.h"
 #include "input.h"
 #include "render.h"
+#include "sound.h"
 
 /************************************************************************
 * Función: 
@@ -51,16 +52,20 @@ int main(void)
     GameState game; //Declara variable tipo GameState
     game_init(&game);   //Inicializa el juego
     render_init();  //Incializa el motor de renderizado
+    sound_init();
+    sound_update_music(game.screen);
 
     //Mientras el juego esté corriendo
     while (game.running) {
         render_draw(&game); //Renderiza el estado actual del juego
         int input = input_poll();   //Revisa cual ha sido la última entrada por parte del usuario
         game_update(&game, input);  //Actuliza el estadod el juego
+        sound_update_music(game.screen);
         sleep_ms(FRAME_DELAY_MS);   //Congela el juego por algunos milisegundos
     }
 
     render_draw(&game); //Renderiza el último frame del juego
+    sound_shutdown();
     render_shutdown();  //"Apaga" el motor de renderizado del juego
     puts("Gracias por jugar."); //Despliega mensaje en consola
     return 0;   //Mensaje de que el programa ha sido ejecutado correctamente
