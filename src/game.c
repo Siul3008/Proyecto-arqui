@@ -11,6 +11,7 @@
 
 #include <ctype.h>
 #include <string.h>
+
 // Definición de pasos para el código Konami
 enum {
     KONAMI_UP,
@@ -20,6 +21,7 @@ enum {
     KONAMI_B,
     KONAMI_A
 };
+
 // Secuencia de pasos para el código Konami
 static int input_matches_konami_step(int expected_step, int input_mask, int character)
 {

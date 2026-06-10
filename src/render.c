@@ -496,13 +496,45 @@ static void render_centered(int row, const char *text)
     mvprintw(row, col, "%s", text);
 }
 
+/************************************************************************
+* Función: 
+    render_centered_color
+* Descripción: 
+    Se asegura de renderizar la cadena de texto ingresada, en el centro 
+        del área de juego usando el código de color proporcionado
+* Entradas: 
+    Número entero que indica la fila en la que se quiere desplegar la
+        cadena de caracteres
+    Puntero a cadena de caracteres que se desea desplegar en pantalla
+    Número entero que indica código del par de color a utilizar
+* Salidas: 
+    Ninguna
+*************************************************************************/
 static void render_centered_color(int row, const char *text, int color_pair)
-{
-    attron(COLOR_PAIR(color_pair));
-    render_centered(row, text);
-    attroff(COLOR_PAIR(color_pair));
+{   
+    //Es importante destacar la forma en la que funcionan los atributos en ncurses, ya que, de la manera que se usa en este proyecto, para cambiar atributos como el color, se hace uso de las funciones attron y attroff
+    //  attron lo que hace es, que todo código que esté después de haberse usado la función, tenga el atributo especificado en esta
+    //  attroff, al contrario, remueve el atributo especificado
+
+    //Aplica atributo de color y llama a función de renderizado en el centro de la pantalla
+
+    attron(COLOR_PAIR(color_pair));     //A todo lo que esté debajo, le otorga el atributo de color proporcionado
+    render_centered(row, text);         //La línea de texto que se renderice aquí, va a tener a COLOR_PAIR_PLAYER como atributo de color
+    attroff(COLOR_PAIR(color_pair));    //A todo lo que esté debajo, se le quitará el atributo de color proporcionado, es decir, ya no tendrá ese atributo, a no ser que se le vuelva a dar con otro attron
 }
 
+/************************************************************************
+* Función: 
+    render_centered_rule
+* Descripción: 
+    Se asegura de renderizar en pantalla una línea de margen en el centro
+        de la pantalla
+* Entradas: 
+    Número entero que indica la fila en la que se quiere desplegar el 
+        margen 
+* Salidas: 
+    Ninguna
+*************************************************************************/
 static void render_centered_rule(int row)
 {
     int width = GAME_WIDTH - 12;
@@ -576,7 +608,13 @@ static void render_menu(void)
     //Limpia la pantalla para no imprimir sobre otros caracteres que pueden haber quedado, es decir, para no imprimir sobre caracteres residuales
     render_clear_screen();
 
+    //Renderiza linea de margen en el centro de la pantalla
     render_centered_rule(2);
+
+    //Renderiza en el centro de la línea especificada al pasar los siguientes parámetros a la función render_centered_color
+    //  1. Número de línea en la que se desea renderizar el texto
+    //  2. Cadena de texto a renderizar
+    //  3. Color con el que se desea renderizar el texto
     render_centered_color(4, "SUMMER CARNIVAL '92: RECCA", COLOR_PAIR_PLAYER);
     render_centered_color(5, "TEXT MODE SHOOTER", COLOR_PAIR_HIGHLIGHT);
     render_centered_rule(7);
@@ -585,40 +623,19 @@ static void render_menu(void)
     render_centered_color(10, "   @   |   @   ", COLOR_PAIR_PLAYER_SHOT);
     render_centered_color(11, " .  .  :  .  . ", COLOR_PAIR_STAR);
 
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco)
+    //Renderiza cadenas de texto en el medio de la línea indicada
     render_centered(14, "W/A/S/D or arrows: move");
     render_centered(15, "Space: fire / release charged bomb");
     render_centered(16, "H: help    Q: quit");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     render_centered_color(19, "PRESS ENTER TO START", COLOR_PAIR_HIGHLIGHT);
-    refresh();
-    return;
 
-    //Es importante destacar la forma en la que funcionan los atributos en ncurses, ya que, de la manera que se usa en este proyecto, para cambiar atributos como el color, se hace uso de las funciones attron y attroff
-    //  attron lo que hace es, que todo código que esté después de haberse usado la función, tenga el atributo especificado en esta
-    //  attroff, al contrario, remueve el atributo especificado
-    //Por ejemplo, vamos con este primer bloque:
-
-    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));                      //A todo lo que esté debajo, le otorga el atributo de color COLOR_PAIR_PLAYER
-    //Renderiza cadena de texto en el medio del área de juego
-    render_centered(4, "SUMMER CARNIVAL '92: RECCA");           //La línea de texto que se renderice aquí, va a tener a COLOR_PAIR_PLAYER como atributo de color
-
-    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));                     //A todo lo que esté debajo, se le quitará el atributo de color COLOR_PAIR_PLAYER, es decir, ya no tendrá ese atributo, a no ser que se le vuelva a dar con otro attron
-
-    //Ahora, teniendo esto claro, solo se va a aclarar que atributo se le da a un bloque de código/texto dentro del programa
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco)
-    //Renderiza cadenas de texto en el medio del área de juego
-    render_centered(7, "Adaptacion en modo texto");
-    render_centered(9, "W/A/S/D o flechas: mover");
-    render_centered(10, "Espacio: disparar");
-    render_centered(11, "H: ayuda");
-    render_centered(12, "Q: salir");
-    render_centered(14, "Presione ENTER para iniciar");
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     refresh();  //Hace un refresco de pantalla
+    
+    return; //Sale de la función
 }
 
 /************************************************************************
@@ -634,6 +651,13 @@ static void render_menu(void)
 static void render_help(void)
 {
     render_clear_screen();  //Limpia la pantalla para no imprimir sobre otros caracteres que pueden haber quedado, es decir, para no imprimir sobre caracteres residuales
+
+    //Renderiza en el centro de la línea especificada al pasar los siguientes parámetros a la función render_centered_color
+    //  1. Número de línea en la que se desea renderizar el texto
+    //  2. Cadena de texto a renderizar
+    //  3. Color con el que se desea renderizar el texto
+
+    //En caso de hacer uso de render_centered, solo se pasan los parámetros 1. y 2.
 
     render_centered_color(3, "HELP", COLOR_PAIR_PLAYER);
     render_centered_rule(5);
@@ -652,29 +676,10 @@ static void render_help(void)
 
     render_centered_color(20, "P: pause   R: restart   Q: quit", COLOR_PAIR_TEXT);
     render_centered_color(22, "H, P or ENTER: return", COLOR_PAIR_HIGHLIGHT);
-    refresh();
-    return;
-
-    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));  //Establece color a COLOR_PAIR_PLAYER (Cyan)
-    //Renderiza cadenas de texto en el medio del área de juego
-    render_centered(3, "CONTROLES");
-    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco)
-    //Renderiza cadenas de texto en el medio del área de juego
-    render_centered(6, "W/A/S/D o flechas: mover");
-    render_centered(7, "Espacio: disparar");
-    render_centered(8, "Soltar espacio: cargar bomba");
-    render_centered(9, "Volver a presionar espacio: liberar bomba");
-    render_centered(11, "F/S/L/T/H: armas temporales");
-    render_centered(12, "D: drones temporales");
-    render_centered(13, "P: pausa");
-    render_centered(14, "R: reiniciar en Game Over");
-    render_centered(15, "Q: salir");
-    render_centered(18, "H, P o ENTER: volver");
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     refresh();  //Hace un refresco de pantalla
+    
+    return; //Sale de la función
 }
 
 /************************************************************************
@@ -691,49 +696,10 @@ static void render_game_over(const GameState *game)
 {
     char line[64]; //Inicizaliza buffer de 64 caracteres
 
-    render_centered_rule(GAME_HEIGHT / 2 - 2);
+    
+    render_centered_rule(GAME_HEIGHT / 2 - 2);  //Renderiza margen
+    //Renderiza texto de GAME OVER en medio del área de juego con texto en color rojo
     render_centered_color(GAME_HEIGHT / 2, "GAME OVER", COLOR_PAIR_ENEMY);
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    render_centered(GAME_HEIGHT / 2 + 2, "RUN SUMMARY");
-    snprintf(line, sizeof(line), "Score : %06d", game->player.score);
-    render_centered(GAME_HEIGHT / 2 + 4, line);
-    snprintf(line, sizeof(line), "Rank  : %d", game->level);
-    render_centered(GAME_HEIGHT / 2 + 5, line);
-    snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
-    render_centered(GAME_HEIGHT / 2 + 6, line);
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
-
-    render_centered_color(GAME_HEIGHT / 2 + 8, "HIGH SCORES", COLOR_PAIR_HIGHLIGHT);
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    for (int i = 0; i < MAX_HIGH_SCORES; ++i) {
-        const HighScoreEntry *entry = &game->high_scores[i];
-
-        if (entry->score > 0) {
-            snprintf(line,
-                     sizeof(line),
-                     "%d. %-10s %06d R:%d B:%d",
-                     i + 1,
-                     entry->name,
-                     entry->score,
-                     entry->rank,
-                     entry->bosses);
-        } else {
-            snprintf(line, sizeof(line), "%d. ---------- ------", i + 1);
-        }
-
-        render_centered(GAME_HEIGHT / 2 + 10 + i, line);
-    }
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
-
-    render_centered_color(GAME_HEIGHT / 2 + 16, "R: restart  H: help  Q: quit", COLOR_PAIR_HIGHLIGHT);
-    return;
-
-    attron(COLOR_PAIR(COLOR_PAIR_ENEMY));   //Establece color a COLOR_PAIR_ENEMY (Rojo)
-    //Renderiza texto de GAME OVER en medio del área de juego
-    render_centered(GAME_HEIGHT / 2, "GAME OVER");
-    attroff(COLOR_PAIR(COLOR_PAIR_ENEMY));
 
     attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco)
     //Renderiza cadena de texto en el medio del área de juego
@@ -756,11 +722,12 @@ static void render_game_over(const GameState *game)
     snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
     //Renderiza buffer una línea más abajo de la línea anterior
     render_centered(GAME_HEIGHT / 2 + 6, line);
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
-    //Imprime encabezado de mejores puntuaciones dos líneas más abajo de la línea anterior
-    render_centered(GAME_HEIGHT / 2 + 8, "HIGH SCORES");
+    //Imprime encabezado de mejores puntuaciones dos líneas más abajo de la línea anterior en color resaltado
+    render_centered_color(GAME_HEIGHT / 2 + 8, "HIGH SCORES", COLOR_PAIR_HIGHLIGHT);
 
-
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
     //Mientras i sea menor a la cantidad máxima de puntuaciones a mostrar (dato definido en config.h)
     for (int i = 0; i < MAX_HIGH_SCORES; ++i) {
         //Toma puntero a objeto HighScoreEntry guardado en el índice actual del arreglo de mejores puntuaciones guardado en el objeto Game
@@ -786,10 +753,12 @@ static void render_game_over(const GameState *game)
         //Renderiza el buffer "line" una línea más abajo de la anterior
         render_centered(GAME_HEIGHT / 2 + 10 + i, line);
     }
-
-    //Renderiza en la parte inferior del área de juego las acciones disponibles
-    render_centered(GAME_HEIGHT / 2 + 16, "R: restart  H: help  Q: quit");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+
+    //Renderiza en la parte inferior del área de juego las acciones disponibles en color resaltado
+    render_centered_color(GAME_HEIGHT / 2 + 16, "R: restart  H: help  Q: quit", COLOR_PAIR_HIGHLIGHT);
+
+    return; //Sale de la función
 }
 
 /************************************************************************
@@ -809,56 +778,29 @@ static void render_name_entry(const GameState *game)
 
     render_clear_screen();  //Limpia la pantalla para no imprimir sobre otros caracteres que pueden haber quedado, es decir, para no imprimir sobre caracteres residuales
 
-    render_centered_rule(3);
+    render_centered_rule(3);    //Renderiza margen en la tercera fila
+    //Renderiza texto "NEW HIGH SCORE" en medio de la fila 5 en color Cyan
     render_centered_color(5, "NEW HIGH SCORE", COLOR_PAIR_PLAYER);
 
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    snprintf(line, sizeof(line), "Score : %06d", game->player.score);
-    render_centered(8, line);
-    snprintf(line, sizeof(line), "Rank  : %d", game->level);
-    render_centered(9, line);
-    snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
-    render_centered(10, line);
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
-
-    snprintf(line,
-             sizeof(line),
-             "Name  : %-10s%s",
-             game->name_input,
-             game->name_length < PLAYER_NAME_MAX_LENGTH ? "_" : "");
-    render_centered_color(13, line, COLOR_PAIR_HIGHLIGHT);
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
-    render_centered(16, "Letters and numbers only, max 10");
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
-    render_centered_color(18, "ENTER: save  BACKSPACE: delete", COLOR_PAIR_TEXT);
-
-    refresh();
-    return;
-
-    attron(COLOR_PAIR(COLOR_PAIR_PLAYER));  //Establece color a COLOR_PAIR_PLAYER (Cyan)
-    //Renderiza texto "NEW HIGH SCORE" en medio de la parte superior del área de juego
-    render_centered(4, "NEW HIGH SCORE");
-    attroff(COLOR_PAIR(COLOR_PAIR_PLAYER));
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco)
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));//Establece color por defecto (Blanco)
     /*Imprime puntaje del jugador en buffer "line" con el siguiente formato:
         Score : (Dato decimal de 6 dígitos que indica el puntaje total, si el número no alcanza a cubrir todos los dígitos, se rellenará con ceros a la izquierda)*/
     snprintf(line, sizeof(line), "Score : %06d", game->player.score);
     //Renderiza buffer tres líneas más abajo del texto de encabezado
-    render_centered(7, line);
+    render_centered(8, line);
     
     /*Imprime rango/nivel del jugador en buffer "line" con el siguiente formato:
         Rank : (Dato decimal que indica rango/nivel alcanzado)*/
     snprintf(line, sizeof(line), "Rank  : %d", game->level);
     //Renderiza buffer una línea más abajo de la línea anterior
-    render_centered(8, line);
+    render_centered(9, line);
 
     /*Imprime cantidad de jefes vencidos por jugador en buffer "line" con el siguiente formato:
         Bosses : (Dato decimal que indica cantidad de jefes vencidos)*/
     snprintf(line, sizeof(line), "Bosses: %d", game->boss_count);
     //Renderiza buffer una línea más abajo de la línea anterior
-    render_centered(9, line);
+    render_centered(10, line);
+    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 
     /*Imprime línea destinada al ingreso del nombre del jugador en buffer "line" con el siguiente formato:
         Name: (Lo que ha ingresado el jugador hasta el momento, si esto es menor a 10 caracteres, los espacios libres serán rellenados por _, 
@@ -868,14 +810,17 @@ static void render_name_entry(const GameState *game)
              "Name  : %-10s%s",
              game->name_input,
              game->name_length < PLAYER_NAME_MAX_LENGTH ? "_" : "");
-    render_centered(12, line);
-    //Renderiza requerimientos de entrada una línea más abajo de la línea anterior
-    render_centered(15, "Letters and numbers only, max 10");
-    //Renderiza teclas de control una línea más abajo de la línea anterior
-    render_centered(16, "ENTER: save  BACKSPACE: delete");
+    render_centered_color(13, line, COLOR_PAIR_HIGHLIGHT);
+
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));
+    //Renderiza requerimientos de entrada tres líneas más abajo de la línea anterior
+    render_centered(16, "Letters and numbers only, max 10");
     attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
+    //Renderiza teclas de control dos líneas más abajo de la línea anterior
+    render_centered_color(18, "ENTER: save  BACKSPACE: delete", COLOR_PAIR_TEXT);
 
     refresh();  //Hace un refresco de pantalla
+    return;
 }
 
 /************************************************************************
@@ -890,17 +835,12 @@ static void render_name_entry(const GameState *game)
 *************************************************************************/
 static void render_pause_overlay(void)
 {
-    render_centered_rule(GAME_HEIGHT / 2);
+    render_centered_rule(GAME_HEIGHT / 2);  //Renderiza un margen en el centro del area de juego
+    //Renderiza en pantalla el mensaje de pausa
     render_centered_color(GAME_HEIGHT / 2 + 2, "PAUSED", COLOR_PAIR_HIGHLIGHT);
+    //Renderiza en pantalla las acciones disponibles y las teclas correspondientes en color blanco
     render_centered_color(GAME_HEIGHT / 2 + 4, "P: resume  Q: quit", COLOR_PAIR_TEXT);
     return;
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco) 
-    //Renderiza en pantalla el mensaje de pausa
-    render_centered(GAME_HEIGHT / 2 + 2, "PAUSED"); 
-    //Renderiza en pantalla las acciones disponibles y las teclas correspondientes
-    render_centered(GAME_HEIGHT / 2 + 4, "P: resume  Q: quit");
-    attroff(COLOR_PAIR(COLOR_PAIR_TEXT));
 }
 
 
@@ -1072,8 +1012,8 @@ void render_draw(const GameState *game)
     mvprintw(0, 0, "Summer Carnival '92: Recca - texto");   //Imprime el nombre del juego en pantalla
     int charge_percent = (game->player.charge_frames * 100) / PLAYER_CHARGE_MAX;    //Obtiene el procentaje de carga de la bomba del jugador
     /*Imprime en pantalla los datos del estado del juego en el siguiente formato:
-        Score: (PUntaje total hasta el momento) Lives: (Vidas restantes del jugador) Rank: (Rango/nivel actual) W: (Nombre de arma actual)(Segundos restantes de arma, en caso de que esta sea especial)
-            D: (Cantidad de drones del jugador)(Segundos restantes de drones, en caso de tener) Charge: (Porcentaje de carga de la bomba del jugador) Next: (Puntaje necesario para llegar al siguiente jefe)*/
+        SC:(Puntaje total hasta el momento) L:(Vidas restantes del jugador)/(Cantidad de vidas máximas que puede tener el jugador) R:(Rango/nivel actual) W:(Nombre de arma actual)(Segundos restantes de arma, en caso de que esta sea especial)
+            D:(Cantidad de drones del jugador)(Segundos restantes de drones, en caso de tener) CHG:(Porcentaje de carga de la bomba del jugador) NEXT:(Puntaje necesario para llegar al siguiente jefe)*/
     mvprintw(1, 0, "SC:%06d  L:%d/%d  R:%d  W:%s %02ds  D:%d %02ds  CHG:%3d%%  %s  NEXT:%d",
              game->player.score,
              game->player.lives,

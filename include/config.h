@@ -37,7 +37,7 @@
 #define EXTRA_LIFE_SCORE_INTERVAL 1000 //Intervalo de puntuación para obtener una vida extra.
 #define KONAMI_CHEAT_LIVES 10 //Cantidad de vidas otorgadas al activar el codigo Konami.
 #define KONAMI_DRONE_DURATION_FRAMES 999999 //Duración en frames de los drones otorgados al activar el código Konami.
-#define POWERUP_TIMER_MAX_FRAMES 999999 //Duración en frames de los power-ups.
+#define POWERUP_TIMER_MAX_FRAMES 999999 //Duración máxima en frames de los power-ups.
 #define PLAYER_START_X (GAME_WIDTH / 2) //Posición inicial del jugador en el eje X.
 #define PLAYER_START_Y (GAME_HEIGHT - 2) //Posición inicial del jugador en el eje Y.
 #define PLAYER_INVULNERABLE_FRAMES 45 //Número de frames de invulnerabilidad después de recibir un daño.

@@ -792,8 +792,23 @@ int enemies_active_count(const Enemy enemies[], int count)
     return active_count;
 }
 
+/************************************************************************
+* Función: 
+   enemy_type_for_wave
+* Descripción: 
+    Indica el tipo de enemigo requerido según el patrón de movimiento con
+        el que este cuenta
+* Entradas:
+    Arreglo con instancias de objeto EnemyType (tipos de enemigo)
+    Número entero que indica la cantidad de tipos de enemigo disponibles
+    Número entero que indica el índice de ola generada
+* Salidas: 
+    Tipo de enemigo EnemyType
+*************************************************************************/
 static EnemyType enemy_type_from_pattern(const EnemyType pattern[], int count, int spawn_index)
-{
+{   
+    //Retornará el tipo que se encuentra guardado en el índice del arreglo proporcionado, cuyo valor sea igual al residuo de dividir el número de ola 
+    //  generada entre la cantidad de tipos de enemigo disponibles
     return pattern[spawn_index % count];
 }
 
