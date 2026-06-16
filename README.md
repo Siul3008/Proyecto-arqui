@@ -260,6 +260,21 @@ Compilar y ejecutar:
 make
 ./recca_text
 
+En Raspberry Pi OS de 32 bits, el Makefile detecta automaticamente arquitecturas ARM AArch32 como armv6l, armv7l o armv8l y agrega los archivos de ensamblador GAS:
+
+src/render_arm.s
+src/collision_arm.s
+
+Tambien se puede forzar esa ruta de compilacion con:
+
+make USE_ARM_GAS=1
+
+Optimizaciones agregadas para la rama ORIGINAL-Performance-Metrics:
+
+- render.c: el llenado del tablero logico, la seleccion de color por caracter y el copiado de proyectiles/efectos al tablero pueden ejecutarse en GAS para ARM.
+- collision.c: las verificaciones frecuentes de posiciones, rangos, proyectil contra jugador, proyectil contra enemigo, jugador contra enemigo y suma saturada de timers pueden ejecutarse en GAS para ARM.
+- En plataformas que no son ARM 32-bit, el juego mantiene las funciones C originales como fallback.
+
 
 ### Nota sobre audio
 
