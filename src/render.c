@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "arm_gas.h"
 #include "config.h"
 #include "enemy.h"
 #include "player.h"
@@ -42,6 +43,9 @@ enum {
 *************************************************************************/
 static void fill_board(char board[GAME_HEIGHT][GAME_WIDTH])
 {
+#if defined(RECCA_USE_ARM_GAS)
+    recca_fill_board_gas(&board[0][0], GAME_HEIGHT * GAME_WIDTH, ' ');
+#else
     //Mientras y sea menor que la altura del área de juego (Llena filas completas)
     for (int y = 0; y < GAME_HEIGHT; ++y) {
         //Mientras y sea menor que el ancho del área de juego (Llena casillas de columna)
@@ -49,6 +53,7 @@ static void fill_board(char board[GAME_HEIGHT][GAME_WIDTH])
             board[y][x] = ' ';  //Coloca un caracter vacio o de espacio en la casilla con las coordenadas [y][x]
         }
     }
+#endif
 }
 
 /************************************************************************
@@ -145,6 +150,9 @@ static void put_starfield_on_board(char board[GAME_HEIGHT][GAME_WIDTH], int fram
 *************************************************************************/
 static int color_for_char(char value)
 {
+#if defined(RECCA_USE_ARM_GAS)
+    return recca_color_for_char_gas((unsigned char)value);
+#else
     switch (value) {
     //---------- Proyectiles del jugador ----------
     case '|':
@@ -194,6 +202,7 @@ static int color_for_char(char value)
     default:
         return COLOR_PAIR_TEXT;
     }
+#endif
 }
 
 /************************************************************************
@@ -207,6 +216,42 @@ static int color_for_char(char value)
 * Salidas: 
     Caracter a usar según tipo de enemigo
 *************************************************************************/
+/* GAS path helpers for repeated board population work. */
+#if defined(RECCA_USE_ARM_GAS)
+static void put_projectiles_on_board(char board[GAME_HEIGHT][GAME_WIDTH],
+                                     const Projectile projectiles[],
+                                     int count,
+                                     char value)
+{
+#if defined(RECCA_USE_ARM_GAS)
+    recca_put_projectiles_on_board_gas(&board[0][0], projectiles, count, value);
+#else
+    for (int i = 0; i < count; ++i) {
+        if (projectiles[i].active) {
+            put_char(board, projectiles[i].position.x, projectiles[i].position.y, value);
+        }
+    }
+#endif
+}
+
+static void put_effects_on_board(char board[GAME_HEIGHT][GAME_WIDTH],
+                                 const Effect effects[],
+                                 int count,
+                                 char value)
+{
+#if defined(RECCA_USE_ARM_GAS)
+    recca_put_effects_on_board_gas(&board[0][0], effects, count, value);
+#else
+    for (int i = 0; i < count; ++i) {
+        if (effects[i].active) {
+            put_char(board, effects[i].position.x, effects[i].position.y, value);
+        }
+    }
+#endif
+}
+#endif
+
+/* Returns the display character used for each enemy type. */
 static char enemy_char_for_type(EnemyType type)
 {
     switch (type) {
@@ -606,6 +651,7 @@ void render_init(void)
 static void render_menu(void)
 {
     //Limpia la pantalla para no imprimir sobre otros caracteres que pueden haber quedado, es decir, para no imprimir sobre caracteres residuales
+
     render_clear_screen();
 
     //Renderiza linea de margen en el centro de la pantalla
@@ -622,8 +668,7 @@ static void render_menu(void)
     render_centered_color(9, "      /A\\      ", COLOR_PAIR_PLAYER);
     render_centered_color(10, "   @   |   @   ", COLOR_PAIR_PLAYER_SHOT);
     render_centered_color(11, " .  .  :  .  . ", COLOR_PAIR_STAR);
-
-    attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco)
+    attron(COLOR_PAIR(COLOR_PAIR_TEXT));    //Establece color por defecto (Blanco)      
     //Renderiza cadenas de texto en el medio de la línea indicada
     render_centered(14, "W/A/S/D or arrows: move");
     render_centered(15, "Space: fire / release charged bomb");
@@ -959,6 +1004,9 @@ void render_draw(const GameState *game)
     put_starfield_on_board(board, game->frame);
 
     //Mientras i sea menor a la cantidad máxima de proyectiles activos del jugador
+#if defined(RECCA_USE_ARM_GAS)
+    put_projectiles_on_board(board, game->player_shots, MAX_PLAYER_SHOTS, '|');
+#else
     for (int i = 0; i < MAX_PLAYER_SHOTS; ++i) {
         //Si el proyectil guardado en el índice actual se encuentra activo
         if (game->player_shots[i].active) { 
@@ -968,6 +1016,11 @@ void render_draw(const GameState *game)
     }
 
     //Mientras i sea menor a la cantidad máxima de proyectiles activos de los enemigos
+#endif
+
+#if defined(RECCA_USE_ARM_GAS)
+    put_projectiles_on_board(board, game->enemy_shots, MAX_ENEMY_SHOTS, 'o');
+#else
     for (int i = 0; i < MAX_ENEMY_SHOTS; ++i) {
         //Si el proyectil guardado en el índice actual se encuentra activo
         if (game->enemy_shots[i].active) {
@@ -977,6 +1030,8 @@ void render_draw(const GameState *game)
     }
 
     //Mientras i sea menor a la cantidad máxima de power-ups activos
+#endif
+
     for (int i = 0; i < MAX_POWERUPS; ++i) {
         //Si el power-up guardado en el índice actual se encuentra activo
         if (game->powerups[i].active) {
@@ -998,6 +1053,9 @@ void render_draw(const GameState *game)
     }
 
     //Mientras i sea menor a la cantidad máxima de efectos activos
+#if defined(RECCA_USE_ARM_GAS)
+    put_effects_on_board(board, game->effects, MAX_EFFECTS, '*');
+#else
     for (int i = 0; i < MAX_EFFECTS; ++i) {
         //Si el efecto guardado en el índice actual se encuentra activo
         if (game->effects[i].active) {
@@ -1005,6 +1063,8 @@ void render_draw(const GameState *game)
             put_char(board, game->effects[i].position.x, game->effects[i].position.y, '*');
         }
     }
+
+#endif
 
     render_clear_screen();  //Limpia el área de consola en la que va a ir el texto que indica los estados de la partida
 
