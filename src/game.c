@@ -935,7 +935,7 @@ void game_update(GameState *game, int input_mask)
                    game->frame,
                    enemy_move_interval_for_wave(game->level));  //Actualiza el estado de los enemigos
     update_charge_shield(game); //Actualiza el estado del escudo cargadod el jugador
-    collisions_update(game);    //Actualiza el estado de las colisiones del juego
+    collisions_update(game);    //Actualiza el estado de las colisiones del juego       ----------------------------------------------------- MÓDULO A MEDIR ----------------------------------------------------- 
     update_extra_life(game);    //Verifica si al jugador se le debe otorgar una vida extra
     game->level = rank_for_score(game->player.score);   //Actualiza el nivel del juego según el puntaje actual del jugador
     update_level_progression(game); //Actualiza el estado de progresión del nivel actual

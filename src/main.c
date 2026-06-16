@@ -59,7 +59,7 @@ int main(void)
     while (game.running) {
         render_draw(&game); //Renderiza el estado actual del juego
         int input = input_poll();   //Revisa cual ha sido la última entrada por parte del usuario
-        game_update(&game, input);  //Actuliza el estadod el juego
+        game_update(&game, input);  //Actuliza el estado del juego
         sound_update_music(game.screen); //Actualiza la música de fondo según la pantalla actual del juego
         sleep_ms(FRAME_DELAY_MS);   //Congela el juego por algunos milisegundos
     }
