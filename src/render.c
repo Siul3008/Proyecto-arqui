@@ -9,6 +9,7 @@
 #include "config.h"
 #include "enemy.h"
 #include "player.h"
+#include "timer.h"
 
 /************************************************************************
 * Estructura: 
@@ -972,8 +973,10 @@ void render_clear_screen(void)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void render_draw(const GameState *game)
+void render_draw(const GameState *game, Timer *render_timer, Timer *colission_timer)
 {
+    timer_start(render_timer);  //Inicia el temporizador del módulo
+
     /*Matriz de caracteres con las siguientes dimensiones
         Altura = Altura área de juego (Definido en config.c)
         Ancho = Ancho área de juego (Definido en config.c)*/
@@ -1197,6 +1200,11 @@ void render_draw(const GameState *game)
     } else if (game->phase == LEVEL_PHASE_BOSS) {
         render_boss_health_bar(game);   //Procede a renderizar la barra de vida del jefe
     }
+
+    timer_end(render_timer);
+
+    timer_report(colission_timer);
+    timer_report(render_timer);
 
     refresh();  //Hace un refresco de pantalla
 }

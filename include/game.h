@@ -33,6 +33,6 @@ typedef struct {
 } GameState;
 
 void game_init(GameState *game);
-void game_update(GameState *game, int input_mask);
+void game_update(GameState *game, int input_mask, Timer *module_timer);
 
 #endif

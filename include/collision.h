@@ -3,6 +3,6 @@
 
 #include "game.h"
 
-void collisions_update(GameState *game);
+void collisions_update(GameState *game, Timer *module_timer);
 
 #endif

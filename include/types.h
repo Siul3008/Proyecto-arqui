@@ -84,6 +84,7 @@ typedef struct {
 } Player;
 
 typedef struct {
+    int timed_module;   //Indicador de cual es el módulo a medir
     struct timespec start;    // Guarda el timestamp nativo exacto de inicio
     double last_time;         // Duración de la última llamada individual
     double total_time;        // Acumulador de tiempo (para promedios)

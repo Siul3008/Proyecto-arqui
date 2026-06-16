@@ -3,7 +3,7 @@ CC = gcc	#Compilador a usar
 CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Iinclude	#Banderas para el compilador (Uso estandar c11)(Habilitar todas las advertencias posibles)(Incluir archivos de encabezado .h)
 LDLIBS = -lncursesw	#Librerias de linker necesarias, en este caso, ncurses
 TARGET := recca_text	#Nombre del archivo destino
-SRC := src/main.c src/game.c src/input.c src/render.c src/player.c src/enemy.c src/projectile.c src/collision.c src/effect.c src/powerup.c src/highscore.c src/sound.c	#Lista de archivos .c que deben ser compilados
+SRC := src/main.c src/game.c src/input.c src/render.c src/player.c src/enemy.c src/projectile.c src/collision.c src/effect.c src/powerup.c src/highscore.c src/sound.c src/timer.c	#Lista de archivos .c que deben ser compilados
 GAS_SRC :=
 HDR := include/config.h include/types.h include/game.h include/input.h include/render.h include/player.h include/enemy.h include/projectile.h include/collision.h include/effect.h include/powerup.h include/highscore.h include/sound.h include/arm_gas.h	#Lista de archivos .h de los que dependen los .c
 

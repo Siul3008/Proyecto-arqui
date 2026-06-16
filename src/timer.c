@@ -9,7 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
-void timer_init(Timer *t) {
+void timer_init(Timer *t, int module_index) {
+    t->timed_module = module_index;
     t->last_time = 0.0;
     t->total_time = 0.0;
     t->count = 0;
@@ -19,7 +20,7 @@ void timer_start(Timer *t) {
     clock_gettime(CLOCK_MONOTONIC, &(t->start));    //Obtiene el timestamp correspondiente al inicio de la medición
 }
 
-void time_end(Timer *t) {
+void timer_end(Timer *t) {
     struct timespec current_end; 
     clock_gettime(CLOCK_MONOTONIC, &current_end);   //Obtiene el timestamp correspondiente al final de la medición
 
@@ -31,18 +32,18 @@ void time_end(Timer *t) {
     t->count++; //Incrementa una vez el contador de ciclos que se han medido
 }
 
-void timer_report(Timer *t, int module_index) {
-    //Actuliza la informacion en pantalla SOLO si ha pasado la cantidad de ciclos indicada en config.h
-    if (t->count < TIMER_UPDATE_INTERVAL) {
+void timer_report(Timer *t) {
+    //Actuliza la informacion en pantalla SOLO si ha pasado la cantidad de ciclos indicada en config.h, y si el numero de módulo se encuentra dentro del rango establecido (1 o 0)
+    if (t->timed_module < 0 || t->timed_module > 1) {
         return;
     }
 
     //Obtiene el numero de fila y columna desde los cuales se desea empezar a imprimir la información
-    int row = GAME_HEIGHT + 10 + (module_index * 4);
+    int row = GAME_HEIGHT + 10 + (t->timed_module * 4);
     int col = GAME_WIDTH + 10;
 
     //Obtiene el nombre el módulo que ha sido monitoreado
-    const char *module_name = (module_index == 0) ? "render.c" : "collision.c";
+    const char *module_name = (t->timed_module == 0) ? "render.c" : "collision.c";
 
     //Imprime el nombre del módulo que acaba de ser medido
     mvprintw(row++, col, "MODULO: %s", module_name);

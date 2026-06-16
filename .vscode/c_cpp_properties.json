@@ -6,7 +6,9 @@
                 "${workspaceFolder}/include",
                 "C:/msys64/ucrt64/include",
                 "C:/msys64/ucrt64/include/ncursesw",
-                "C:/msys64/ucrt64/include/ncurses"
+                "C:/msys64/ucrt64/include/ncurses",
+                "C:/msys64/ucrt64/include/SDL2",
+                "C:/msys64/ucrt64/include/SDL3"
             ],
             "defines": [
                 "_DEBUG",

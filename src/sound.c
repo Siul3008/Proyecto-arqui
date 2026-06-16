@@ -5,7 +5,7 @@
 #if USE_SDL_AUDIO
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <SDL_mixer.h>
 
 static int audio_ready = 0;
 static Mix_Music *music_menu = 0;

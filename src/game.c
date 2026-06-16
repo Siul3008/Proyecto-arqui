@@ -9,6 +9,7 @@
 #include "input.h"
 #include "powerup.h"
 #include "sound.h"
+#include "timer.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -844,8 +845,10 @@ void game_init(GameState *game)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void game_update(GameState *game, int input_mask)
-{   //Si la pantalla en la que se encuentra el juego es en la que el jugador ingresa su nombre
+void game_update(GameState *game, int input_mask, Timer *module_timer)
+{   
+    timer_start(module_timer);
+    //Si la pantalla en la que se encuentra el juego es en la que el jugador ingresa su nombre
     if (game->screen == GAME_SCREEN_NAME_ENTRY) {
         update_name_entry(game, input_mask);    //Actualiza el estado del ingreso de nombre
         return; //Sale de la función
@@ -935,7 +938,7 @@ void game_update(GameState *game, int input_mask)
                    game->frame,
                    enemy_move_interval_for_wave(game->level));  //Actualiza el estado de los enemigos
     update_charge_shield(game); //Actualiza el estado del escudo cargadod el jugador
-    collisions_update(game);    //Actualiza el estado de las colisiones del juego       ----------------------------------------------------- MÓDULO A MEDIR ----------------------------------------------------- 
+    collisions_update(game, module_timer);    //Actualiza el estado de las colisiones del juego       ----------------------------------------------------- MÓDULO A MEDIR ----------------------------------------------------- 
     update_extra_life(game);    //Verifica si al jugador se le debe otorgar una vida extra
     game->level = rank_for_score(game->player.score);   //Actualiza el nivel del juego según el puntaje actual del jugador
     update_level_progression(game); //Actualiza el estado de progresión del nivel actual

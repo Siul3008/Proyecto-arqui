@@ -6,6 +6,7 @@
 #include "enemy.h"
 #include "powerup.h"
 #include "sound.h"
+#include "timer.h"
 
 #include <string.h>
 
@@ -464,8 +465,10 @@ static const char *weapon_status_message(WeaponType weapon)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void collisions_update(GameState *game)
+void collisions_update(GameState *game, Timer *module_timer)
 {
+    timer_start(module_timer);  //Inicia el temporizador del módulo
+
     //Mientras i sea menor a la cantidad máxima de disparos permitidos al jugador al mismo tiempo
     for (int i = 0; i < MAX_PLAYER_SHOTS; ++i) {
         Projectile *shot = &game->player_shots[i];
@@ -582,4 +585,6 @@ void collisions_update(GameState *game)
             sound_powerup();
         }
     }
+
+    timer_end(module_timer);    //Una vez el módulo ha terminado su función, se detiene el temporizador del mismo
 }

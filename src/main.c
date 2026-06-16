@@ -11,6 +11,7 @@
 #include "input.h"
 #include "render.h"
 #include "sound.h"
+#include "timer.h"
 
 /************************************************************************
 * Función: 
@@ -48,7 +49,13 @@ static void sleep_ms(int milliseconds)
     0 -> El programa ha sido ejecutado con éxito
 *************************************************************************/
 int main(void)
-{
+{   
+    //Declara variables de temporizador y las inicializa
+    Timer render_timer;
+    Timer colission_timer;
+    timer_init(&render_timer, 0);
+    timer_init(&colission_timer, 1);
+
     GameState game; //Declara variable tipo GameState
     game_init(&game);   //Inicializa el juego
     render_init();  //Incializa el motor de renderizado
@@ -57,14 +64,14 @@ int main(void)
 
     //Mientras el juego esté corriendo
     while (game.running) {
-        render_draw(&game); //Renderiza el estado actual del juego
+        render_draw(&game, &render_timer, &colission_timer); //Renderiza el estado actual del juego
         int input = input_poll();   //Revisa cual ha sido la última entrada por parte del usuario
-        game_update(&game, input);  //Actuliza el estado del juego
+        game_update(&game, input, &colission_timer);  //Actualiza el estado del juego
         sound_update_music(game.screen); //Actualiza la música de fondo según la pantalla actual del juego
         sleep_ms(FRAME_DELAY_MS);   //Congela el juego por algunos milisegundos
     }
 
-    render_draw(&game); //Renderiza el último frame del juego
+    render_draw(&game, &render_timer, &colission_timer); //Renderiza el último frame del juego
     sound_shutdown();  //"Apaga" el motor de sonido del juego
     render_shutdown();  //"Apaga" el motor de renderizado del juego
     puts("Gracias por jugar."); //Despliega mensaje en consola
