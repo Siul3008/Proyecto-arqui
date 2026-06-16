@@ -2,6 +2,7 @@
 #define RECCA_TYPES_H
 
 #include "config.h"
+#include <time.h>
 
 typedef struct {
     int x;

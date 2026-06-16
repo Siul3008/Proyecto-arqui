@@ -2,7 +2,7 @@
 #define RECCA_TIMER_H
 
 #include "types.h"
-#include "time.h"
+#include <time.h>
 #include "config.h"
 
 void timer_init(Timer *t);

@@ -1,1 +1,55 @@
 #include "timer.h"
+#include "types.h"
+#include "time.h"
+#include "config.h"
+
+#include <time.h>
+#include <curses.h>
+#include <locale.h>
+#include <stdio.h>
+#include <string.h>
+
+void timer_init(Timer *t) {
+    t->last_time = 0.0;
+    t->total_time = 0.0;
+    t->count = 0;
+}
+
+void timer_start(Timer *t) {
+    clock_gettime(CLOCK_MONOTONIC, &(t->start));    //Obtiene el timestamp correspondiente al inicio de la medición
+}
+
+void time_end(Timer *t) {
+    struct timespec current_end; 
+    clock_gettime(CLOCK_MONOTONIC, &current_end);   //Obtiene el timestamp correspondiente al final de la medición
+
+    //Calcula la diferencia con de la muestra final con respecto a la inicial
+    //                                                               Divide entre 1000000000.0, ya que esa es la cantidad de nanosegundos en un segundo
+    t->last_time = (current_end.tv_sec - t->start.tv_sec) + (current_end.tv_nsec + t->start.tv_nsec) / 1000000000.0;
+
+    t->total_time += t->last_time;  //Le suma el último tiempo obtenido al aculumado de tiempo total que se lleva guardado
+    t->count++; //Incrementa una vez el contador de ciclos que se han medido
+}
+
+void timer_report(Timer *t, int module_index) {
+    //Actuliza la informacion en pantalla SOLO si ha pasado la cantidad de ciclos indicada en config.h
+    if (t->count < TIMER_UPDATE_INTERVAL) {
+        return;
+    }
+
+    //Obtiene el numero de fila y columna desde los cuales se desea empezar a imprimir la información
+    int row = GAME_HEIGHT + 10 + (module_index * 4);
+    int col = GAME_WIDTH + 10;
+
+    //Obtiene el nombre el módulo que ha sido monitoreado
+    const char *module_name = (module_index == 0) ? "render.c" : "collision.c";
+
+    //Imprime el nombre del módulo que acaba de ser medido
+    mvprintw(row++, col, "MODULO: %s", module_name);
+    mvprintw(row++, col, "  Ultima ejecucion : %.9f segundos", t->last_time);   //Imprime el último tiempo de ejecución
+    mvprintw(row++, col, "  Tiempo Promedio  : %.9f segundos", t->total_time / t->count);   //Imprime el tiempo de ejecución promedio
+
+    // Reseteo de acumuladores para el siguiente bloque de mediciones
+    t->total_time = 0.0;
+    t->count = 0;
+}
