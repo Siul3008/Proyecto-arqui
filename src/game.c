@@ -507,8 +507,9 @@ static void apply_charge_bomb(GameState *game)
 * Salidas: 
     Ninguna
 *************************************************************************/
-static void reset_run(GameState *game)
+static void reset_run(GameState *game, Timer *module_timer)
 {
+    timer_reset(module_timer);  //Reestablece los valores dentro del timer
     player_init(&game->player); //Incializa desde cero el estado del jugador
     projectiles_clear(game->player_shots, MAX_PLAYER_SHOTS);    //Reestablece el estado de todos los proyectiles del jugador
     effect_clear(game->effects, MAX_EFFECTS);   //Restablece el estado de todos los efectos visuales
@@ -823,11 +824,11 @@ static void update_level_progression(GameState *game)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void game_init(GameState *game)
+void game_init(GameState *game, Timer *module_timer)
 {
     game->konami_step = 0;
     game->konami_unlocked = 0;
-    reset_run(game);  //Reestablece todos los valores necesarios para el juego 
+    reset_run(game, module_timer);  //Reestablece todos los valores necesarios para el juego 
     highscores_load(game->high_scores, MAX_HIGH_SCORES, HIGHSCORE_FILE_NAME);   //Carga la tabla de puntajes
     game->running = 1;  //Actualiza el estado de que el juego está corriendo, es decir, lo "activa"
     game->screen = GAME_SCREEN_MENU;    //Establece la pantalla en la que debe estar el juego, en este caso, el menú de inicio
@@ -847,21 +848,20 @@ void game_init(GameState *game)
 *************************************************************************/
 void game_update(GameState *game, int input_mask, Timer *module_timer)
 {   
-    timer_start(module_timer);
     //Si la pantalla en la que se encuentra el juego es en la que el jugador ingresa su nombre
     if (game->screen == GAME_SCREEN_NAME_ENTRY) {
         update_name_entry(game, input_mask);    //Actualiza el estado del ingreso de nombre
         return; //Sale de la función
     }
-
+    
     update_konami_code(game, input_mask);
-
+    
     //Si se ha presionado una tecla y esta ha sido QUIT (Q)
     if (input_mask & INPUT_QUIT) {
         game->running = 0;  //Establece el estado del juego como inactivo, es decir, ya no está corriendo
         return; //Sale de la función
     }
-
+    
     //Si la pantalla en la que se encuentra el juego es la de ayuda
     if (game->screen == GAME_SCREEN_HELP) {
         //Si se ha presionado una tecla y esta es HELP (H), START (Enter) o PAUSE (P)
@@ -871,35 +871,35 @@ void game_update(GameState *game, int input_mask, Timer *module_timer)
         }
         return; //Sale de la función
     }
-
+    
     //Si se ha presionado una tecla y esta ha sido HELP (H)
     if (input_mask & INPUT_HELP) {
         game->previous_screen = game->screen; //Guarda la pantalla en la que estaba el juego
         game->screen = GAME_SCREEN_HELP;    //Establece la pantalla del juego en la pantalla de ayuda
         return; //Sale de la función
     }   
-
+    
     //Si el juego se encuentra en la pantalla de menú principal
     if (game->screen == GAME_SCREEN_MENU) {
         //Si se ha presionado una tecla y esta ha sido START (Enter)
         if (input_mask & INPUT_START) {
-            reset_run(game);    //Reestablece el estado del juego
+            reset_run(game, module_timer);    //Reestablece el estado del juego
             game->screen = GAME_SCREEN_PLAYING; //Establece la pantalla del juego en la que indica que la partida está en curso
         }
         return; //Sale de la función 
     }
-
+    
     //Si el juego se encuentra en la pantalla de GAME OVER
     if (game->screen == GAME_SCREEN_GAME_OVER) {
         //Si se ha presionado una tecla y esta ha sido RESTART (R)
         if (input_mask & INPUT_RESTART) {
             game->konami_unlocked = 0;   //Desactiva el código Konami, en caso de que este haya sido activado
-            reset_run(game);    //Reestablece el estado del juego
+            reset_run(game, module_timer);    //Reestablece el estado del juego
             game->screen = GAME_SCREEN_PLAYING; //Establece la pantalla del juego en la que indica que la partida está en curso
         }
         return; //Sale de la función 
     }
-
+    
     //Si el juego se encuentra en la pantalla de pausa
     if (game->screen == GAME_SCREEN_PAUSED) {
         //Si se ha presionado una tecla y esta ha sido PAUSE (P)
@@ -908,7 +908,7 @@ void game_update(GameState *game, int input_mask, Timer *module_timer)
         }
         return; //Sale de la función 
     }
-
+    
     //Si se ha presionado una tecla y esta ha sido PAUSE (P)
     if (input_mask & INPUT_PAUSE) {
         game->screen = GAME_SCREEN_PAUSED;  //Establece la pantalla del juego en la pantalla de pausa
@@ -918,7 +918,7 @@ void game_update(GameState *game, int input_mask, Timer *module_timer)
     player_update(&game->player, input_mask, game->player_shots, MAX_PLAYER_SHOTS); //Actualiza el estado del jugador
     apply_charge_bomb(game);    //Actualiza el estado de la bomba del jugador
     update_wave_spawning(game); //Actualiza el estado de las olas generadas
-
+    
     projectiles_update(game->player_shots,
                        MAX_PLAYER_SHOTS,
                        game->frame,

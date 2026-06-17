@@ -975,32 +975,35 @@ void render_clear_screen(void)
 *************************************************************************/
 void render_draw(const GameState *game, Timer *render_timer, Timer *colission_timer)
 {
-    timer_start(render_timer);  //Inicia el temporizador del módulo
-
+    
     /*Matriz de caracteres con las siguientes dimensiones
-        Altura = Altura área de juego (Definido en config.c)
-        Ancho = Ancho área de juego (Definido en config.c)*/
+    Altura = Altura área de juego (Definido en config.c)
+    Ancho = Ancho área de juego (Definido en config.c)*/
     char board[GAME_HEIGHT][GAME_WIDTH];    
     fill_board(board);  //Deja en blaco el área de juego
-
+    
     //Si la pantalla actual del juego es la de menú principal 
     if (game->screen == GAME_SCREEN_MENU) {
         render_menu();  //Pasa a renderizarla 
         return; //Sale de la función
     }
-
+    
     //Si la pantalla actual del juego es la de menú de ayuda
     if (game->screen == GAME_SCREEN_HELP) {
         render_help();  //Pasa a renderizarla
         return; //Sale de la función
     }
-
+    
     //Si la pantalla actual del juego es la de menú de ingreso de nombre por parte del jugador
     if (game->screen == GAME_SCREEN_NAME_ENTRY) {
         render_name_entry(game);    //Pasa a renderizarla
         return; //Sale de la función
     }
 
+    if (game->screen != GAME_SCREEN_GAME_OVER && game->screen != GAME_SCREEN_PAUSED) {
+        timer_start(render_timer);  //Inicia el temporizador del módulo
+    }
+    
     //Si no ha salido de la función en este punto, significa que hay una partida en curso
 
     //Renderiza el fondo estrellado en pantalla
@@ -1187,6 +1190,9 @@ void render_draw(const GameState *game, Timer *render_timer, Timer *colission_ti
         render_centered(GAME_HEIGHT + 4, game->status_message); //Dibuja el mensaje en pantalla justo debajo del área de juego
         attroff(COLOR_PAIR(COLOR_PAIR_PLAYER_SHOT));
     }
+    if (game->screen != GAME_SCREEN_GAME_OVER && game->screen != GAME_SCREEN_PAUSED) {
+        timer_end(render_timer);    //Detiene el temporizador del módulo
+    }
 
     //Si la pantalla del juego ha cambiado a GAME OVER
     if (game->screen == GAME_SCREEN_GAME_OVER) {
@@ -1195,16 +1201,14 @@ void render_draw(const GameState *game, Timer *render_timer, Timer *colission_ti
     //Si la pantalla del juego ha cambiado al menú de pausa    
     } else if (game->screen == GAME_SCREEN_PAUSED) {
         render_pause_overlay(); //Pasa a renderizarla
-
-    //Si la pantalla del juego ha cambiado a la de un nivel de jefe    
+        
+        //Si la pantalla del juego ha cambiado a la de un nivel de jefe    
     } else if (game->phase == LEVEL_PHASE_BOSS) {
         render_boss_health_bar(game);   //Procede a renderizar la barra de vida del jefe
     }
-
-    timer_end(render_timer);
-
-    timer_report(colission_timer);
-    timer_report(render_timer);
+    
+        timer_report(colission_timer);
+        timer_report(render_timer);
 
     refresh();  //Hace un refresco de pantalla
 }

@@ -9,5 +9,6 @@ void timer_init(Timer *t, int module_index);
 void timer_start(Timer *t);
 void timer_end(Timer *t);
 void timer_report(Timer *t);
+void timer_reset(Timer *t);
 
 #endif

@@ -32,7 +32,7 @@ typedef struct {
     int konami_unlocked;
 } GameState;
 
-void game_init(GameState *game);
+void game_init(GameState *game, Timer *module_timer);
 void game_update(GameState *game, int input_mask, Timer *module_timer);
 
 #endif
