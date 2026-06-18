@@ -2,6 +2,7 @@
 #include "types.h"
 #include "time.h"
 #include "config.h"
+#include "game.h"
 
 #include <time.h>
 #include <curses.h>
@@ -22,21 +23,25 @@ void timer_reset(Timer *t) {
     t->count = 0;    
 }
 
-void timer_start(Timer *t) {
-    t->last_time = 0.0;
-    clock_gettime(CLOCK_MONOTONIC, &(t->start));    //Obtiene el timestamp correspondiente al inicio de la medición
+void timer_start(const GameState *game, Timer *t) {
+    if (game->screen == GAME_SCREEN_PLAYING) {
+        t->last_time = 0.0;
+        clock_gettime(CLOCK_MONOTONIC, &(t->start));    //Obtiene el timestamp correspondiente al inicio de la medición
+    }
 }
 
-void timer_end(Timer *t) {
-    struct timespec current_end; 
-    clock_gettime(CLOCK_MONOTONIC, &current_end);   //Obtiene el timestamp correspondiente al final de la medición
+void timer_end(const GameState *game, Timer *t) {
+    if (game->screen == GAME_SCREEN_PLAYING) {
+        struct timespec current_end; 
+        clock_gettime(CLOCK_MONOTONIC, &current_end);   //Obtiene el timestamp correspondiente al final de la medición
 
-    //Calcula la diferencia con de la muestra final con respecto a la inicial
-    //                                                               Divide entre 1000000000.0, ya que esa es la cantidad de nanosegundos en un segundo
-    t->last_time = (current_end.tv_nsec - t->start.tv_nsec) / 1000000.0;
+        //Calcula la diferencia con de la muestra final con respecto a la inicial
+        //                                                               Divide entre 1000000000.0, ya que esa es la cantidad de nanosegundos en un segundo
+        t->last_time = (current_end.tv_nsec - t->start.tv_nsec) / 1000000.0;
 
-    t->total_time += t->last_time;  //Le suma el último tiempo obtenido al aculumado de tiempo total que se lleva guardado
-    t->count++; //Incrementa una vez el contador de ciclos que se han medido
+        t->total_time += t->last_time;  //Le suma el último tiempo obtenido al aculumado de tiempo total que se lleva guardado
+        t->count++; //Incrementa una vez el contador de ciclos que se han medido
+    }
 }
 
 void timer_report(Timer *t) {
@@ -62,4 +67,10 @@ void timer_report(Timer *t) {
         t->total_time = 0.0;
         t->count = 0;
     }
+}
+
+void timers_render(Timer *t1, Timer *t2) {
+    timer_report(t1);
+    timer_report(t2);
+    refresh();
 }

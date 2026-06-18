@@ -507,9 +507,10 @@ static void apply_charge_bomb(GameState *game)
 * Salidas: 
     Ninguna
 *************************************************************************/
-static void reset_run(GameState *game, Timer *module_timer)
+static void reset_run(GameState *game, Timer *t1, Timer *t2)
 {
-    timer_reset(module_timer);  //Reestablece los valores dentro del timer
+    timer_reset(t1);  //Reestablece los valores dentro de ambos timer del juego
+    timer_reset(t2);
     player_init(&game->player); //Incializa desde cero el estado del jugador
     projectiles_clear(game->player_shots, MAX_PLAYER_SHOTS);    //Reestablece el estado de todos los proyectiles del jugador
     effect_clear(game->effects, MAX_EFFECTS);   //Restablece el estado de todos los efectos visuales
@@ -824,11 +825,11 @@ static void update_level_progression(GameState *game)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void game_init(GameState *game, Timer *module_timer)
+void game_init(GameState *game, Timer *t1, Timer *t2)
 {
     game->konami_step = 0;
     game->konami_unlocked = 0;
-    reset_run(game, module_timer);  //Reestablece todos los valores necesarios para el juego 
+    reset_run(game, t1, t2);;  //Reestablece todos los valores necesarios para el juego 
     highscores_load(game->high_scores, MAX_HIGH_SCORES, HIGHSCORE_FILE_NAME);   //Carga la tabla de puntajes
     game->running = 1;  //Actualiza el estado de que el juego está corriendo, es decir, lo "activa"
     game->screen = GAME_SCREEN_MENU;    //Establece la pantalla en la que debe estar el juego, en este caso, el menú de inicio
@@ -846,7 +847,7 @@ void game_init(GameState *game, Timer *module_timer)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void game_update(GameState *game, int input_mask, Timer *module_timer)
+void game_update(GameState *game, int input_mask, Timer *t1, Timer *t2)
 {   
     //Si la pantalla en la que se encuentra el juego es en la que el jugador ingresa su nombre
     if (game->screen == GAME_SCREEN_NAME_ENTRY) {
@@ -883,7 +884,7 @@ void game_update(GameState *game, int input_mask, Timer *module_timer)
     if (game->screen == GAME_SCREEN_MENU) {
         //Si se ha presionado una tecla y esta ha sido START (Enter)
         if (input_mask & INPUT_START) {
-            reset_run(game, module_timer);    //Reestablece el estado del juego
+            reset_run(game, t1, t2);    //Reestablece el estado del juego
             game->screen = GAME_SCREEN_PLAYING; //Establece la pantalla del juego en la que indica que la partida está en curso
         }
         return; //Sale de la función 
@@ -894,7 +895,7 @@ void game_update(GameState *game, int input_mask, Timer *module_timer)
         //Si se ha presionado una tecla y esta ha sido RESTART (R)
         if (input_mask & INPUT_RESTART) {
             game->konami_unlocked = 0;   //Desactiva el código Konami, en caso de que este haya sido activado
-            reset_run(game, module_timer);    //Reestablece el estado del juego
+            reset_run(game, t1, t2);;    //Reestablece el estado del juego
             game->screen = GAME_SCREEN_PLAYING; //Establece la pantalla del juego en la que indica que la partida está en curso
         }
         return; //Sale de la función 
@@ -937,8 +938,13 @@ void game_update(GameState *game, int input_mask, Timer *module_timer)
                    MAX_ENEMY_SHOTS,
                    game->frame,
                    enemy_move_interval_for_wave(game->level));  //Actualiza el estado de los enemigos
-    update_charge_shield(game); //Actualiza el estado del escudo cargadod el jugador
-    collisions_update(game, module_timer);    //Actualiza el estado de las colisiones del juego       ----------------------------------------------------- MÓDULO A MEDIR ----------------------------------------------------- 
+    update_charge_shield(game); //Actualiza el estado del escudo cargado del jugador
+
+    // -------------------------- Medición módulo de colisiones --------------------------
+    timer_start(game, t1);  //Inicia el temporizador del módulo de colisiones
+    collisions_update(game);    //Actualiza el estado de las colisiones del juego
+    timer_end(game, t1);    //Una vez el módulo de colisiones ha terminado su función, se detiene el temporizador del mismo
+
     update_extra_life(game);    //Verifica si al jugador se le debe otorgar una vida extra
     game->level = rank_for_score(game->player.score);   //Actualiza el nivel del juego según el puntaje actual del jugador
     update_level_progression(game); //Actualiza el estado de progresión del nivel actual

@@ -6,6 +6,6 @@
 void render_init(void);
 void render_shutdown(void);
 void render_clear_screen(void);
-void render_draw(const GameState *game, Timer *render_timer, Timer *game_timer);
+void render_draw(const GameState *game);
 
 #endif

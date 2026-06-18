@@ -57,7 +57,7 @@ int main(void)
     timer_init(&colission_timer, 1);
 
     GameState game; //Declara variable tipo GameState
-    game_init(&game, &colission_timer);   //Inicializa el juego
+    game_init(&game, &colission_timer, &render_timer);   //Inicializa el juego
     render_init();  //Incializa el motor de renderizado
     sound_init(); //Inicializa el motor de sonido
     sound_update_music(game.screen); //Actualiza la música de fondo según la pantalla actual del juego
@@ -65,13 +65,19 @@ int main(void)
     //Mientras el juego esté corriendo
     while (game.running) {
         int input = input_poll();   //Revisa cual ha sido la última entrada por parte del usuario
-        game_update(&game, input, &colission_timer);  //Actualiza el estado del juego
-        render_draw(&game, &render_timer, &colission_timer); //Renderiza el estado actual del juego
+        game_update(&game, input, &colission_timer, &render_timer);  //Actualiza el estado del juego
+
+        timer_start(&game, &render_timer);
+        render_draw(&game); //Renderiza el estado actual del juego
+        timer_end(&game, &render_timer);
+
+        timers_render(&render_timer, &colission_timer);
+
         sound_update_music(game.screen); //Actualiza la música de fondo según la pantalla actual del juego
         sleep_ms(FRAME_DELAY_MS);   //Congela el juego por algunos milisegundos
     }
 
-    render_draw(&game, &render_timer, &colission_timer); //Renderiza el último frame del juego
+    render_draw(&game); //Renderiza el último frame del juego
     sound_shutdown();  //"Apaga" el motor de sonido del juego
     render_shutdown();  //"Apaga" el motor de renderizado del juego
     puts("Gracias por jugar."); //Despliega mensaje en consola
