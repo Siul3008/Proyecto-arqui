@@ -90,13 +90,13 @@ mingw32-make
 Esto genera:
 
 ```sh
-recca_text.exe
+recca_text_original.exe
 ```
 
 Para ejecutar:
 
 ```sh
-./recca_text.exe
+./recca_text_original.exe
 ```
 
 Si se hace uso de la terminal UCRT64 de MSYS2, también es posible ejecutar:
@@ -123,7 +123,7 @@ make
 Para ejecutar:
 
 ```sh
-./recca_text
+./recca_text_original
 ```
 
 ## Limpieza
@@ -222,7 +222,7 @@ Compilar y ejecutar:
 
 cd /f/U/Arqui/ProyectoFinal/SummerCarnival92Recca
 mingw32-make
-./recca_text.exe
+./recca_text_original.exe
 
 
 ### Linux / Ubuntu / Debian
@@ -240,7 +240,7 @@ sudo apt install -y mpg123 pkg-config
 Compilar y ejecutar:
 
 make
-./recca_text
+./recca_text_original
 
 
 ### Raspberry Pi 4
@@ -258,7 +258,7 @@ sudo apt install -y mpg123 pkg-config
 Compilar y ejecutar:
 
 make
-./recca_text
+./recca_text_original
 
 En Raspberry Pi OS de 32 bits, el Makefile detecta automaticamente arquitecturas ARM AArch32 como armv6l, armv7l o armv8l y agrega los archivos de ensamblador GAS:
 
@@ -268,6 +268,17 @@ src/collision_arm.s
 Tambien se puede forzar esa ruta de compilacion con:
 
 make USE_ARM_GAS=1
+
+Para generar ambos binarios de medicion:
+
+make both
+
+Esto genera:
+
+./recca_text_original
+./recca_text_gas
+
+El primero usa solo la ruta C. El segundo activa RECCA_USE_ARM_GAS y compila los archivos .s. Para comparar tiempos, ejecutar ambos por separado y revisar las mediciones mostradas por el sistema de timers.
 
 Optimizaciones agregadas para la rama ORIGINAL-Performance-Metrics:
 
