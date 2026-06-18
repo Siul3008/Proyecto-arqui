@@ -60,10 +60,7 @@ void timer_report(Timer *t) {
     //Imprime el nombre del módulo que acaba de ser medido
     mvprintw(row++, col, "MODULO: %s", module_name);
     mvprintw(row++, col, "  Ultima ejecucion : %.5f milisegundos", t->last_time);   //Imprime el último tiempo de ejecución
-    mvprintw(row++, col, "  Tiempo Promedio  : %.5f milisegundos", t->total_time / t->count);   //Imprime el tiempo de ejecución promedio
-
-    // Reseteo de acumuladores para el siguiente bloque de mediciones
-    
+    mvprintw(row++, col, "  Tiempo Promedio  : %.5f milisegundos", t->total_time / t->count);   //Imprime el tiempo de ejecución promedio  
 }
 
 void timers_render(Timer *t1, Timer *t2) {
