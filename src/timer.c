@@ -63,10 +63,7 @@ void timer_report(Timer *t) {
     mvprintw(row++, col, "  Tiempo Promedio  : %.5f milisegundos", t->total_time / t->count);   //Imprime el tiempo de ejecución promedio
 
     // Reseteo de acumuladores para el siguiente bloque de mediciones
-    if (t->total_time> 100000 || t->count > 100000) {
-        t->total_time = 0.0;
-        t->count = 0;
-    }
+    
 }
 
 void timers_render(Timer *t1, Timer *t2) {
