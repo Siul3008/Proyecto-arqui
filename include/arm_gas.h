@@ -8,6 +8,7 @@ void recca_fill_board_gas(char *board, int total_cells, int value);
 int recca_color_for_char_gas(int value);
 void recca_put_projectiles_on_board_gas(char *board, const Projectile *projectiles, int count, int value);
 void recca_put_effects_on_board_gas(char *board, const Effect *effects, int count, int value);
+void recca_projectiles_update_gas(Projectile *projectiles, int count);
 int recca_positions_overlap_gas(int ax, int ay, int bx, int by);
 int recca_ranges_overlap_gas(int left_a, int right_a, int left_b, int right_b);
 int recca_projectile_hits_player_gas(int shot_x, int shot_y, int player_x, int player_y);

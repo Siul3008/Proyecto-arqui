@@ -264,6 +264,7 @@ En Raspberry Pi OS de 32 bits, el Makefile detecta automaticamente arquitecturas
 
 src/render_arm.s
 src/collision_arm.s
+src/projectile_arm.s
 
 Tambien se puede forzar esa ruta de compilacion con:
 
@@ -284,6 +285,7 @@ Optimizaciones agregadas para la rama ORIGINAL-Performance-Metrics:
 
 - render.c: el llenado del tablero logico, la seleccion de color por caracter y el copiado de proyectiles/efectos al tablero pueden ejecutarse en GAS para ARM.
 - collision.c: las verificaciones frecuentes de posiciones, rangos, proyectil contra jugador, proyectil contra enemigo, jugador contra enemigo y suma saturada de timers pueden ejecutarse en GAS para ARM.
+- projectile.c: la actualizacion repetitiva de proyectiles activos, movimiento por velocidad y desactivacion al salir del tablero puede ejecutarse en GAS para ARM.
 - En plataformas que no son ARM 32-bit, el juego mantiene las funciones C originales como fallback.
 
 

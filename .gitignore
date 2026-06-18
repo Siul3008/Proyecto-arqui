@@ -5,6 +5,9 @@
 *.obj
 *.dll
 *.a
+recca_text
+recca_text_original
+recca_text_gas
 
 # Debug symbols and logs
 *.pdb
