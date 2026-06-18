@@ -1,7 +1,8 @@
 #Declaración de variables para compilación
-CC = gcc	#Compilador a usar	CFLAGS PI -std=gnu11 -Wall -Wextra -Wpedantic -Iinclude $(shell pkg-config --cflags sdl2 SDL2_mixer)
-CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Iinclude #Banderas para el compilador (Uso estandar c11)(Habilitar todas las advertencias posibles)(Incluir archivos de encabezado .h)
-LDLIBS = -lncursesw	#PI $(shell pkg-config --libs sdl2 SDL2_mixer) #Librerias de linker necesarias, en este caso, ncurses
+CC = gcc	#Compilador a usar
+
+CFLAGS = -std=gnu11 -Wall -Wextra -Wpedantic -Iinclude #Banderas para el compilador (Uso estandar c11)(Habilitar todas las advertencias posibles)(Incluir archivos de encabezado .h)
+LDLIBS = -lncursesw	#Librerias de linker necesarias, en este caso, ncurses
 TARGET := recca_text	#Nombre del archivo destino
 SRC := src/main.c src/game.c src/input.c src/render.c src/player.c src/enemy.c src/projectile.c src/collision.c src/effect.c src/powerup.c src/highscore.c src/sound.c src/timer.c	#Lista de archivos .c que deben ser compilados
 GAS_SRC :=
@@ -22,7 +23,8 @@ ifeq ($(OS),Windows_NT)
 	LDLIBS += -lSDL2_mixer -lSDL2
 	RM = del /Q
 else	#De lo contrario, con estos otros
-	LDLIBS += -lSDL2_mixer -lSDL2
+	CFLAGS += $(shell pkg-config --cflags sdl2 SDL2_mixer)
+	LDLIBS += $(shell pkg-config --libs sdl2 SDL2_mixer)
 	RM = rm -f
 
 	UNAME_M := $(shell uname -m)

@@ -31,16 +31,27 @@ void timer_start(const GameState *game, Timer *t) {
 }
 
 void timer_end(const GameState *game, Timer *t) {
+    //Para evitar que se llene demasiado la memoria, cada cierto tiempo reestablece el contador y el tiempo total acumulado
+    if (t->count >= TIMER_UPDATE_INTERVAL) {
+        t->total_time = 0.0;
+        t->count = 0;
+    }
+
+    //Procede al calculo del tiempo SOLO si hay una partida en curso
     if (game->screen == GAME_SCREEN_PLAYING) {
         struct timespec current_end; 
         clock_gettime(CLOCK_MONOTONIC, &current_end);   //Obtiene el timestamp correspondiente al final de la medición
 
-        //Calcula la diferencia con de la muestra final con respecto a la inicial
-        //                                                               Divide entre 1000000000.0, ya que esa es la cantidad de nanosegundos en un segundo
-        t->last_time = (current_end.tv_nsec - t->start.tv_nsec) / 1000000.0;
+        //Calcula, en segundos la diferencia con de la muestra final con respecto a la inicial
+        double diff_sec = (double)(current_end.tv_sec - t->start.tv_sec);
+        double diff_nsec = (double)(current_end.tv_nsec - t->start.tv_nsec);
+
+        //El resultado en segundos se multiplica por 1000.0, para así pasarlo a milisegundos
+        t->last_time = (diff_sec + (diff_nsec / 1000000000.0)) * 1000.0;
 
         t->total_time += t->last_time;  //Le suma el último tiempo obtenido al aculumado de tiempo total que se lleva guardado
         t->count++; //Incrementa una vez el contador de ciclos que se han medido
+
     }
 }
 
