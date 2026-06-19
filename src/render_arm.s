@@ -191,7 +191,7 @@ recca_put_projectiles_on_board_gas:
 ; Entradas: 
 ;   Matriz de pantalla board   
 ;   Arreglo de efectos
-;   Cantidad maxima de proyectiles
+;   Cantidad maxima de efectos
 ;   Caracter a colocar
 ; Salidas: 
 ;   Ninguna
