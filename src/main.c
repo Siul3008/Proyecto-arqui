@@ -11,6 +11,7 @@
 #include "input.h"
 #include "render.h"
 #include "sound.h"
+#include "timer.h"
 
 /************************************************************************
 * Función: 
@@ -48,19 +49,39 @@ static void sleep_ms(int milliseconds)
     0 -> El programa ha sido ejecutado con éxito
 *************************************************************************/
 int main(void)
-{
+{   
+    //Declara variables de temporizador y las inicializa
+    Timer render_timer;
+    Timer colission_timer;
+    Timer projectile_timer;
+    Timer game_timer;
+    timer_init(&render_timer, 0);
+    timer_init(&colission_timer, 1);
+    timer_init(&projectile_timer, 2);
+    timer_init(&game_timer, 3);
+
     GameState game; //Declara variable tipo GameState
-    game_init(&game);   //Inicializa el juego
+    game_init(&game, &colission_timer, &render_timer, &projectile_timer, &game_timer);   //Inicializa el juego
     render_init();  //Incializa el motor de renderizado
     sound_init(); //Inicializa el motor de sonido
     sound_update_music(game.screen); //Actualiza la música de fondo según la pantalla actual del juego
 
     //Mientras el juego esté corriendo
     while (game.running) {
-        render_draw(&game); //Renderiza el estado actual del juego
+        timer_start(game.screen, &game_timer);
         int input = input_poll();   //Revisa cual ha sido la última entrada por parte del usuario
-        game_update(&game, input);  //Actuliza el estadod el juego
+        game_update(&game, input, &colission_timer, &render_timer, &projectile_timer, &game_timer);  //Actualiza el estado del juego
+
+        timer_start(game.screen, &render_timer);
+        render_draw(&game); //Renderiza el estado actual del juego
+        timer_end(game.screen, &render_timer);
+
         sound_update_music(game.screen); //Actualiza la música de fondo según la pantalla actual del juego
+        
+        timer_end(game.screen, &game_timer);
+        
+        timers_render(&render_timer, &colission_timer, &projectile_timer, &game_timer);
+
         sleep_ms(FRAME_DELAY_MS);   //Congela el juego por algunos milisegundos
     }
 
@@ -70,3 +91,4 @@ int main(void)
     puts("Gracias por jugar."); //Despliega mensaje en consola
     return 0;   //Mensaje de que el programa ha sido ejecutado correctamente
 }
+
