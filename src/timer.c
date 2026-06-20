@@ -32,7 +32,7 @@ void timer_start(GameScreen screen, Timer *t) {
 
 void timer_end(GameScreen screen, Timer *t) {
     //Para evitar que se llene demasiado la memoria, cada cierto tiempo reestablece el contador y el tiempo total acumulado
-    if (t->count >= TIMER_UPDATE_INTERVAL) {
+    if (t->count >= TIMER_UPDATE_INTERVAL || t->total_time > 10.0) {
         t->total_time = 0.0;
         t->count = 0;
     }
