@@ -10,7 +10,7 @@ TARGET_ORIGINAL := recca_text_original
 TARGET_GAS := recca_text_gas
 
 SRC := src/main.c src/game.c src/input.c src/render.c src/player.c src/enemy.c src/projectile.c src/collision.c src/effect.c src/powerup.c src/highscore.c src/sound.c src/timer.c
-GAS_SRC := src/render_arm.s
+GAS_SRC := src/render_arm.s src/collision_arm.s
 GAS_TARGETS :=
 
 HDR := include/config.h include/types.h include/game.h include/input.h include/render.h include/player.h include/enemy.h include/projectile.h include/collision.h include/effect.h include/powerup.h include/highscore.h include/sound.h include/timer.h include/arm_gas.h

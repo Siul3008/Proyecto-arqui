@@ -1,10 +1,12 @@
 #include "collision.h"
 
+#include "arm_gas.h"
 #include "config.h"
 #include "effect.h"
 #include "enemy.h"
 #include "powerup.h"
 #include "sound.h"
+#include "timer.h"
 
 #include <string.h>
 
@@ -21,7 +23,11 @@
 ********************************************************************/
 static int positions_overlap(Vec2i a, Vec2i b)
 {    
+#if defined(RECCA_USE_ARM_GAS)
+    return recca_positions_overlap_gas(a.x, a.y, b.x, b.y);
+#else
     return a.x == b.x && a.y == b.y;
+#endif
 }
 
 /************************************************************************
@@ -39,7 +45,11 @@ static int positions_overlap(Vec2i a, Vec2i b)
 *************************************************************************/
 static int ranges_overlap(int left_a, int right_a, int left_b, int right_b)
 {
+#if defined(RECCA_USE_ARM_GAS)
+    return recca_ranges_overlap_gas(left_a, right_a, left_b, right_b);
+#else
     return left_a <= right_b && left_b <= right_a;
+#endif
 }
 
 /************************************************************************
@@ -116,10 +126,17 @@ static int player_bottom(const Player *player)
 *************************************************************************/
 static int projectile_hits_player(Vec2i shot_position, const Player *player)
 {
+#if defined(RECCA_USE_ARM_GAS)
+    return recca_projectile_hits_player_gas(shot_position.x,
+                                            shot_position.y,
+                                            player->position.x,
+                                            player->position.y);
+#else
     return shot_position.y >= player_top(player) &&
            shot_position.y <= player_bottom(player) &&
            shot_position.x >= player_left(player) &&
            shot_position.x <= player_right(player);
+#endif
 }
 
 /************************************************************************
@@ -136,10 +153,18 @@ static int projectile_hits_player(Vec2i shot_position, const Player *player)
 *************************************************************************/
 static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
 {
+#if defined(RECCA_USE_ARM_GAS)
+    return recca_projectile_hits_enemy_gas(shot_position.x,
+                                           shot_position.y,
+                                           enemy->position.x,
+                                           enemy->position.y,
+                                           enemy->type);
+#else
     return shot_position.y >= enemy_top(enemy) &&
            shot_position.y <= enemy_bottom(enemy) &&
            shot_position.x >= enemy_left(enemy) &&
            shot_position.x <= enemy_right(enemy);
+#endif
 }
 
 /************************************************************************
@@ -156,8 +181,16 @@ static int projectile_hits_enemy(Vec2i shot_position, const Enemy *enemy)
 *************************************************************************/
 static int player_hits_enemy(const Player *player, const Enemy *enemy)
 {
+#if defined(RECCA_USE_ARM_GAS)
+    return recca_player_hits_enemy_gas(player->position.x,
+                                       player->position.y,
+                                       enemy->position.x,
+                                       enemy->position.y,
+                                       enemy->type);
+#else
     return ranges_overlap(player_top(player), player_bottom(player), enemy_top(enemy), enemy_bottom(enemy)) &&
            ranges_overlap(player_left(player), player_right(player), enemy_left(enemy), enemy_right(enemy));
+#endif
 }
 
 /************************************************************************
@@ -341,11 +374,15 @@ static void set_status_message(GameState *game, const char *message)
 *************************************************************************/
 static int capped_timer_add(int current_timer, int added_timer)
 {
+#if defined(RECCA_USE_ARM_GAS)
+    return recca_capped_timer_add_gas(current_timer, added_timer, POWERUP_TIMER_MAX_FRAMES);
+#else
     if (current_timer >= POWERUP_TIMER_MAX_FRAMES - added_timer) {
         return POWERUP_TIMER_MAX_FRAMES;                       
     }
 
     return current_timer + added_timer;
+#endif
 }
 
 /************************************************************************
