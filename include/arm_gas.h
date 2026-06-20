@@ -18,6 +18,9 @@ int recca_projectile_hits_player_gas(int shot_x, int shot_y, int player_x, int p
 int recca_projectile_hits_enemy_gas(int shot_x, int shot_y, int enemy_x, int enemy_y, int enemy_type);
 int recca_player_hits_enemy_gas(int player_x, int player_y, int enemy_x, int enemy_y, int enemy_type);
 int recca_capped_timer_add_gas(int current_timer, int added_timer, int max_timer);
+
+//  FUNCIONES DE PROYECTILES
+void recca_projectiles_update_gas(Projectile *projectiles, int count);
 #endif
 
 #endif
