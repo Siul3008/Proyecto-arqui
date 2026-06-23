@@ -70,6 +70,4 @@
 #define SOUND_ENABLED 1 //Habilitar o deshabilitar el sonido. Cambia a 0 para desactivar el sonido.
 #define USE_SDL_AUDIO 1 //Habilitar o deshabilitar el uso de SDL para el audio. Cambia a 0 para usar un sistema de audio alternativo o desactivar completamente el audio.
 
-#define TIMER_UPDATE_INTERVAL 1000 //Intervalo en número de ciclos que se tiene para reportar el tiempo que ha durado en ejecutarse el módulo medido 
-
 #endif

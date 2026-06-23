@@ -9,7 +9,6 @@
 #include "input.h"
 #include "powerup.h"
 #include "sound.h"
-#include "timer.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -507,12 +506,8 @@ static void apply_charge_bomb(GameState *game)
 * Salidas: 
     Ninguna
 *************************************************************************/
-static void reset_run(GameState *game, Timer *t1, Timer *t2, Timer *t3, Timer *t4)
+static void reset_run(GameState *game)
 {
-    timer_reset(t1);  //Reestablece los valores dentro de ambos timer del juego
-    timer_reset(t2);
-    timer_reset(t3);
-    timer_reset(t4);
     player_init(&game->player); //Incializa desde cero el estado del jugador
     projectiles_clear(game->player_shots, MAX_PLAYER_SHOTS);    //Reestablece el estado de todos los proyectiles del jugador
     effect_clear(game->effects, MAX_EFFECTS);   //Restablece el estado de todos los efectos visuales
@@ -827,11 +822,11 @@ static void update_level_progression(GameState *game)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void game_init(GameState *game, Timer *t1, Timer *t2, Timer *t3, Timer *t4)
+void game_init(GameState *game)
 {
     game->konami_step = 0;
     game->konami_unlocked = 0;
-    reset_run(game, t1, t2, t3, t4);  //Reestablece todos los valores necesarios para el juego 
+    reset_run(game);  //Reestablece todos los valores necesarios para el juego 
     highscores_load(game->high_scores, MAX_HIGH_SCORES, HIGHSCORE_FILE_NAME);   //Carga la tabla de puntajes
     game->running = 1;  //Actualiza el estado de que el juego está corriendo, es decir, lo "activa"
     game->screen = GAME_SCREEN_MENU;    //Establece la pantalla en la que debe estar el juego, en este caso, el menú de inicio
@@ -849,7 +844,7 @@ void game_init(GameState *game, Timer *t1, Timer *t2, Timer *t3, Timer *t4)
 * Salidas: 
     Ninguna
 *************************************************************************/
-void game_update(GameState *game, int input_mask, Timer *t1, Timer *t2, Timer *t3, Timer *t4)
+void game_update(GameState *game, int input_mask)
 {   //Si la pantalla en la que se encuentra el juego es en la que el jugador ingresa su nombre
     if (game->screen == GAME_SCREEN_NAME_ENTRY) {
         update_name_entry(game, input_mask);    //Actualiza el estado del ingreso de nombre
@@ -885,7 +880,7 @@ void game_update(GameState *game, int input_mask, Timer *t1, Timer *t2, Timer *t
 if (game->screen == GAME_SCREEN_MENU) {
         //Si se ha presionado una tecla y esta ha sido START (Enter)
         if (input_mask & INPUT_START) {
-            reset_run(game, t1, t2, t3, t4);    //Reestablece el estado del juego
+            reset_run(game);    //Reestablece el estado del juego
             game->screen = GAME_SCREEN_PLAYING; //Establece la pantalla del juego en la que indica que la partida está en curso
         }
         return; //Sale de la función 
@@ -896,7 +891,7 @@ if (game->screen == GAME_SCREEN_MENU) {
         //Si se ha presionado una tecla y esta ha sido RESTART (R)
         if (input_mask & INPUT_RESTART) {
             game->konami_unlocked = 0;   //Desactiva el código Konami, en caso de que este haya sido activado
-            reset_run(game, t1, t2, t3, t4);    //Reestablece el estado del juego
+            reset_run(game);    //Reestablece el estado del juego
             game->screen = GAME_SCREEN_PLAYING; //Establece la pantalla del juego en la que indica que la partida está en curso
         }
         return; //Sale de la función 
@@ -921,7 +916,6 @@ if (game->screen == GAME_SCREEN_MENU) {
     apply_charge_bomb(game);    //Actualiza el estado de la bomba del jugador
     update_wave_spawning(game); //Actualiza el estado de las olas generadas
 
-    timer_start(game->screen, t3);
     projectiles_update(game->player_shots,
                        MAX_PLAYER_SHOTS,
                        game->frame,
@@ -930,7 +924,6 @@ if (game->screen == GAME_SCREEN_MENU) {
                        MAX_ENEMY_SHOTS,
                        game->frame,
                        enemy_shot_move_interval_for_wave(game->level)); //Actualiza el estado de los proyetiles de los enemigos
-    timer_end(game->screen, t3);
 
     powerups_update(game->powerups,
                     MAX_POWERUPS,
@@ -945,9 +938,7 @@ if (game->screen == GAME_SCREEN_MENU) {
     update_charge_shield(game); //Actualiza el estado del escudo cargado del jugador
     
     // -------------------------- Medición módulo de colisiones --------------------------
-    timer_start(game->screen, t1);  //Inicia el temporizador del módulo de colisiones
     collisions_update(game);    //Actualiza el estado de las colisiones del juego
-    timer_end(game->screen, t1);    //Una vez el módulo de colisiones ha terminado su función, se detiene el temporizador del mismo
 
     update_extra_life(game);    //Verifica si al jugador se le debe otorgar una vida extra
     game->level = rank_for_score(game->player.score);   //Actualiza el nivel del juego según el puntaje actual del jugador

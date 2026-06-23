@@ -6,7 +6,7 @@
 #include "enemy.h"
 #include "powerup.h"
 #include "sound.h"
-#include "timer.h"
+
 
 #include <string.h>
 

@@ -9,7 +9,6 @@
 #include "config.h"
 #include "enemy.h"
 #include "player.h"
-#include "timer.h"
 
 /************************************************************************
 * Estructura: 
